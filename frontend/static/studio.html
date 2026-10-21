@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Atelier — ZakhrafaAI</title>
+<link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
+                 fill="none" stroke="#C9A227" stroke-width="2"/>
+      </svg>
+      ZakhrafaAI
+    </a>
+    <div class="nav-links">
+      <a href="/index.html">Accueil</a>
+      <a href="/studio.html" class="active">Générer</a>
+      <a href="/dashboard.html">Tableau de bord</a>
+    </div>
+    <a class="nav-cta" href="/dashboard.html">Mon tableau de bord</a>
+  </div>
+</nav>
+
+<main class="section" style="padding-top:40px;">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Atelier de réglages</div>
+      <h2>Générer un motif artisanal</h2>
+      <p>Choisissez une catégorie, un moteur génératif et une palette culturelle. Chaque génération utilise un nouveau bruit aléatoire (seed) sauf si vous en fixez un — utile pour reproduire un résultat.</p>
+    </div>
+
+    <div class="studio-grid">
+      <!-- Zone de résultat / galerie -->
+      <div class="panel">
+        <h3>Galerie du motif</h3>
+        <div class="canvas-wrap" id="canvasWrap">
+          <div class="canvas-placeholder" id="placeholder">
+            <svg width="64" height="64" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
+                       fill="none" stroke="#9FB4C2" stroke-width="1.5"/>
+            </svg>
+            Aucun motif généré. Réglez l'atelier à droite puis cliquez sur « Générer ».
+          </div>
+        </div>
+        <div class="meta-row" id="metaRow" style="display:none;">
+          <span>Moteur : <b id="metaEngine">—</b></span>
+          <span>Résolution : <b id="metaSize">—</b></span>
+          <span>Temps : <b id="metaTime">—</b></span>
+          <span>Seed : <b id="metaSeed">—</b></span>
+          <span id="metaSourceWrap"></span>
+        </div>
+        <div class="flex gap-8 mt-24">
+          <button class="btn btn-outline" id="downloadBtn" disabled>Télécharger le PNG</button>
+          <button class="btn btn-outline" id="regenBtn" disabled>Régénérer (même réglages)</button>
+        </div>
+
+        <h3 class="mt-24" style="margin-top:32px;">Historique de session</h3>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+
+      <!-- Atelier de réglages -->
+      <div class="panel">
+        <h3>Réglages</h3>
+
+        <div class="field">
+          <label>Type de motif</label>
+          <div class="segmented" id="categorySeg">
+            <button data-value="zellige" class="active">Zellige</button>
+            <button data-value="tapis">Tapis</button>
+            <button data-value="broderie">Broderie</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Moteur génératif</label>
+          <div class="segmented" id="engineSeg">
+            <button data-value="gan" class="active">GAN (rapide)</button>
+            <button data-value="diffusion">Diffusion (qualité)</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Palette culturelle</label>
+          <div class="palette-swatches" id="paletteSwatches" style="margin-bottom:22px;"></div>
+        </div>
+
+        <div class="field">
+          <label for="seedInput">Seed (optionnel)</label>
+          <input type="number" id="seedInput" placeholder="aléatoire" />
+        </div>
+
+        <div class="field">
+          <label for="sizeInput">Résolution (px)</label>
+          <input type="number" id="sizeInput" placeholder="défaut selon le moteur" min="128" max="1024" step="32" />
+        </div>
+
+        <button class="btn btn-primary btn-block" id="generateBtn">Générer le motif</button>
+        <p style="font-size:0.78rem; margin-top:12px;">
+          Le mode GAN cible ~256×256 pour un rendu rapide ; le mode Diffusion
+          cible 768×768 pour un rendu plus détaillé, conformément aux résolutions
+          utilisées dans le projet.
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <small>ZakhrafaAI — Atelier de génération.</small>
+    <small>API locale : <code style="font-family:var(--font-mono)">/api/generate</code></small>
+  </div>
+</footer>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/studio.js"></script>
+</body>
+</html>

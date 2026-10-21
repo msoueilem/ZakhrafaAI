@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tableau de bord — ZakhrafaAI</title>
+<link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
+                 fill="none" stroke="#C9A227" stroke-width="2"/>
+      </svg>
+      ZakhrafaAI
+    </a>
+    <div class="nav-links">
+      <a href="/index.html">Accueil</a>
+      <a href="/studio.html">Générer</a>
+      <a href="/dashboard.html" class="active">Tableau de bord</a>
+    </div>
+    <a class="nav-cta" href="/studio.html">Ouvrir l'atelier</a>
+  </div>
+</nav>
+
+<main class="section" style="padding-top:40px;">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Tableau de bord</div>
+      <h2>Vos motifs générés (session en cours)</h2>
+      <p>Ces statistiques reflètent les motifs générés depuis le démarrage du serveur — elles ne sont pas persistées entre les redémarrages.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><b id="statTotal">—</b><span>Motifs générés</span></div>
+      <div class="stat-card"><b id="statZellige">—</b><span>Zellige</span></div>
+      <div class="stat-card"><b id="statTapis">—</b><span>Tapis</span></div>
+      <div class="stat-card"><b id="statBroderie">—</b><span>Broderie</span></div>
+    </div>
+
+    <div class="studio-grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="panel">
+        <h3>Répartition par catégorie</h3>
+        <div id="barChart"></div>
+      </div>
+      <div class="panel">
+        <h3>Derniers motifs</h3>
+        <div class="history-list" id="historyList">
+          <div class="empty-state">Chargement…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <small>ZakhrafaAI — Tableau de bord.</small>
+  </div>
+</footer>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/dashboard.js"></script>
+</body>
+</html>

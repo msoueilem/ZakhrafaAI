@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZakhrafaAI — Génération de motifs artisanaux marocains</title>
+<link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
+                 fill="none" stroke="#C9A227" stroke-width="2"/>
+      </svg>
+      ZakhrafaAI
+    </a>
+    <div class="nav-links">
+      <a href="/index.html" class="active">Accueil</a>
+      <a href="/studio.html">Générer</a>
+      <a href="/dashboard.html">Tableau de bord</a>
+      <a href="#produit">Produit</a>
+      <a href="#comparatif">Comparatif</a>
+    </div>
+    <a class="nav-cta" href="/studio.html">Ouvrir l'atelier</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">AIDS — Master IA &amp; Data Sciences · FST Tanger</div>
+      <h1>L'IA au service du <span>zellige</span>, des <span>tapis</span> &amp; de la <span>broderie</span></h1>
+      <p style="font-size:1.05rem; max-width:520px;">
+        ZakhrafaAI génère des motifs artisanaux marocains authentiques grâce à deux
+        moteurs génératifs complémentaires — un GAN rapide et un modèle de diffusion
+        haute fidélité — sans jamais remplacer le maâlem : un outil d'exploration
+        et de création assistée.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/studio.html">Générer un motif →</a>
+        <a class="btn btn-outline" href="#comparatif">Voir le comparatif GAN / Diffusion</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>3</b><span>catégories : zellige, tapis, broderie</span></div>
+        <div class="hero-stat"><b>2</b><span>moteurs génératifs comparés</span></div>
+        <div class="hero-stat"><b>768²</b><span>résolution diffusion par défaut</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="/assets/img/hero_zellige.png" alt="Motif de zellige généré par ZakhrafaAI" />
+    </div>
+  </div>
+  <svg class="zellige-divider" viewBox="0 0 800 26" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="stripStar" width="40" height="26" patternUnits="userSpaceOnUse">
+        <rect width="40" height="26" fill="none"/>
+        <polygon points="20,3 23,11 31,11 25,16 27,24 20,19 13,24 15,16 9,11 17,11"
+                 fill="none" stroke="#C9A227" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="800" height="26" fill="url(#stripStar)"/>
+  </svg>
+</header>
+
+<main>
+  <section class="section" id="produit" style="padding-top:20px;">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Notre produit</div>
+        <h2>Trois traditions, un même moteur de création assistée</h2>
+        <p>Chaque catégorie possède ses propres codes géométriques et son propre niveau de complexité — le système apprend ces contraintes plutôt que de les ignorer.</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <img class="card-swatch" src="/assets/img/sample_zellige.png" alt="Exemple de motif zellige" style="object-fit:cover;"/>
+          <span class="tag">Complexité : haute</span>
+          <h3>Zellige</h3>
+          <p>Mosaïques géométriques colorées, entrelacs d'étoiles à 8 branches, symétrie stricte hérité des ateliers de Fès.</p>
+        </div>
+        <div class="card">
+          <img class="card-swatch" src="/assets/img/sample_tapis.png" alt="Exemple de motif de tapis" style="object-fit:cover;"/>
+          <span class="tag">Complexité : moyenne à élevée</span>
+          <h3>Tapis</h3>
+          <p>Motifs berbères et arabesques, compositions régionales, losanges et codes tribaux organisés en bandes.</p>
+        </div>
+        <div class="card">
+          <img class="card-swatch" src="/assets/img/sample_broderie.png" alt="Exemple de motif de broderie" style="object-fit:cover;"/>
+          <span class="tag">Complexité : moyenne</span>
+          <h3>Broderie</h3>
+          <p>Ornements floraux et géométriques, tiges et feuillages reliant des rosaces brodées à la main.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="comparatif">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Comparatif technique</div>
+        <h2>GAN vs modèle de diffusion</h2>
+        <p>Deux familles de modèles complémentaires, comparées en qualité visuelle, contrôle créatif, stabilité d'apprentissage et temps d'inférence (§8 du rapport).</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Critère</th><th>GAN convolutionnel</th><th>Diffusion (Stable Diffusion)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Résolution par défaut</td><td>256 × 256</td><td>768 × 768</td></tr>
+            <tr><td>Vitesse de génération</td><td>Très rapide</td><td>Plus lente, qualité supérieure</td></tr>
+            <tr><td>Contrôle créatif</td><td>Conditionnement par catégorie</td><td>Prompt textuel + label, guidance scale</td></tr>
+            <tr><td>Cohérence structurelle</td><td>Variable selon la convergence</td><td>Généralement plus cohérente</td></tr>
+            <tr><td>Usage recommandé</td><td>Prototypage rapide, exploration</td><td>Rendu final, présentation</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-24">
+        <a class="btn btn-primary" href="/studio.html">Comparer les deux moteurs dans l'atelier →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div class="eyebrow">Collaboration homme-machine</div>
+        <h2>Un outil d'exploration, pas un substitut à l'artisan</h2>
+        <p style="max-width:760px;">
+          L'objectif n'est pas de remplacer l'artisan mais de lui fournir un outil d'aide
+          à la création, favorisant l'exploration de nouvelles combinaisons de formes, de
+          couleurs et de structures géométriques, dans le respect des codes culturels
+          existants. L'artisan reste au centre de la validation finale.
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <small>ZakhrafaAI — Projet AIDS, Faculté des Sciences et Techniques de Tanger, Université Abdelmalek Essadi.</small>
+    <small>Encadré par M. Mostafa Ezziyani</small>
+  </div>
+</footer>
+
+</body>
+</html>

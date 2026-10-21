@@ -1,0 +1,9 @@
+# Optionnel — uniquement nécessaire si vous branchez de vrais poids
+# GAN entraînés (app/models/gan.py) ou un pipeline Stable Diffusion
+# (app/models/diffusion.py). Non requis pour faire fonctionner l'application
+# avec le générateur procédural par défaut.
+torch==2.5.1
+diffusers==0.31.0
+transformers==4.47.0
+accelerate==1.2.1
+safetensors==0.4.5
