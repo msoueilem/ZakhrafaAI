@@ -1,145 +1,229 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Atelier — ZakhrafaAI</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 rx=%276%27 fill=%27%230B2436%27/%3E%3Cpolygon points=%2720,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14%27 fill=%27none%27 stroke=%27%23C9A227%27 stroke-width=%272.5%27/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="/assets/css/styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="meta.studio.title">Atelier — ZakhrafaAI</title>
+<meta name="description" content="Choisissez un artisanat, un mode et une palette : générez un motif marocain instantanément ou en rendu IA réaliste." data-i18n-attr="content:meta.studio.description">
+<meta name="theme-color" content="#070B12">
+<script src="/assets/js/boot.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/studio.css">
+<link rel="icon" href="/assets/img/ornament.svg" type="image/svg+xml">
 </head>
-<body>
+<body data-page="studio">
+<header id="site-header"></header>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="/">
-      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
-                 fill="none" stroke="#C9A227" stroke-width="2"/>
-      </svg>
-      ZakhrafaAI
-    </a>
-    <div class="nav-links" id="navMenu">
-      <a href="/">Accueil</a>
-      <a href="/studio" class="active">Générer</a>
-      <a href="/dashboard">Tableau de bord</a>
+<main id="main" tabindex="-1">
+  <!-- En-tête compact -->
+  <section class="studio-head lattice-host">
+    <div class="lattice lattice--subtle" aria-hidden="true"></div>
+    <div class="container studio-head__inner">
+      <span class="eyebrow eyebrow--chip" data-i18n="studio.eyebrow">Atelier</span>
+      <h1 class="studio-head__title" data-i18n="studio.title">Générer un motif</h1>
+      <p class="muted studio-head__sub" data-i18n="studio.subtitle">Réglez l'artisanat, le mode et la palette, puis lancez la génération.</p>
     </div>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Ouvrir le menu">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <a class="nav-cta" href="/dashboard">Tableau de bord</a>
-  </div>
-</nav>
+  </section>
 
-<main class="section" style="padding-top:40px;">
-  <div class="container">
-    <div class="section-head">
-      <div class="eyebrow">Atelier de réglages</div>
-      <h2>Générer un motif artisanal</h2>
-      <p>Choisissez une catégorie, un mode de rendu et une palette culturelle. Chaque génération utilise une nouvelle seed (qui fixe la composition et les couleurs) sauf si vous en fixez une — utile pour reproduire un résultat.</p>
-    </div>
+  <div class="container studio">
+    <div class="studio__layout">
 
-    <div class="studio-grid">
-      <!-- Zone de résultat / galerie -->
-      <div class="panel">
-        <h3>Galerie du motif</h3>
-        <div class="canvas-wrap" id="canvasWrap">
-          <div class="canvas-placeholder" id="placeholder">
-            <svg width="64" height="64" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
-                       fill="none" stroke="#9FB4C2" stroke-width="1.5"/>
-            </svg>
-            <p>Aucun motif généré pour l'instant. Choisissez vos réglages, puis cliquez sur « Générer le motif ».</p>
+      <!-- ================= Réglages ================= -->
+      <form class="controls glass glass--strong" id="controls" novalidate aria-labelledby="controls-title">
+        <div class="controls__scroll" id="controls-scroll">
+          <h2 class="sr-only" id="controls-title" data-i18n="studio.controls.title">Réglages</h2>
+
+          <!-- Assistant : idée -> réglages (masqué si indisponible) -->
+          <section class="assist" id="assist" hidden aria-labelledby="assist-title">
+            <div class="assist__head">
+              <span class="assist__icon" data-icon="sparkle"></span>
+              <h3 class="assist__title" id="assist-title" data-i18n="studio.assist.title">Décrivez votre idée</h3>
+              <span class="badge badge--ai assist__badge" data-i18n="studio.assist.badge">Assistant IA</span>
+            </div>
+            <p class="field__hint" id="assist-hint" data-i18n="studio.assist.hint">Dans la langue de votre choix : l'assistant propose l'artisanat, la palette et le mode. Vous vérifiez, puis vous générez.</p>
+            <label class="sr-only" for="assist-idea" data-i18n="studio.assist.label">Votre idée</label>
+            <textarea class="textarea assist__input" id="assist-idea" rows="2" maxlength="500" aria-describedby="assist-hint assist-count"
+              placeholder="ex. : un tapis chaleureux aux couleurs du désert pour un salon"
+              data-i18n-attr="placeholder:studio.assist.placeholder"></textarea>
+            <div class="assist__row">
+              <span class="field__hint ltr-num" id="assist-count" aria-live="off"></span>
+              <button type="button" class="btn btn--ai btn--sm" id="assist-submit">
+                <span data-icon="sparkle"></span><span class="js-label" data-i18n="studio.assist.submit">Proposer des réglages</span>
+              </button>
+            </div>
+            <div id="assist-out" aria-live="polite"></div>
+          </section>
+
+          <!-- 1. Artisanat -->
+          <section class="group" id="group-craft" aria-labelledby="craft-label">
+            <h3 class="group__label" id="craft-label" data-i18n="studio.step.craft">1. Artisanat</h3>
+            <div class="segmented" role="radiogroup" aria-labelledby="craft-label" id="craft">
+              <button type="button" class="segmented__option" role="radio" aria-checked="true" data-value="zellige"><span data-icon="star"></span><span data-i18n="category.zellige.name">Zellige</span></button>
+              <button type="button" class="segmented__option" role="radio" aria-checked="false" data-value="tapis"><span data-icon="diamond"></span><span data-i18n="category.tapis.name">Tapis</span></button>
+              <button type="button" class="segmented__option" role="radio" aria-checked="false" data-value="broderie"><span data-icon="flower"></span><span data-i18n="category.broderie.name">Broderie</span></button>
+            </div>
+          </section>
+
+          <!-- 2. Mode -->
+          <section class="group" id="group-mode" aria-labelledby="mode-label">
+            <h3 class="group__label" id="mode-label" data-i18n="studio.step.mode">2. Mode</h3>
+            <div class="option-grid mode-grid" role="radiogroup" aria-labelledby="mode-label" aria-describedby="mode-hint" id="mode">
+              <button type="button" class="option-card mode-card" role="radio" aria-checked="true" data-value="gan">
+                <span class="option-card__title"><span data-icon="bolt"></span><span data-i18n="studio.mode.fast.label">Rapide</span></span>
+                <span class="option-card__meta" data-i18n="studio.mode.fast.meta">Instantané · Gratuit</span>
+              </button>
+              <button type="button" class="option-card option-card--ai mode-card" role="radio" aria-checked="false" data-value="diffusion">
+                <span class="option-card__title"><span data-icon="sparkle"></span><span data-i18n="studio.mode.ai.label">Rendu IA</span></span>
+                <span class="option-card__meta" data-i18n="studio.mode.ai.meta">~10 s · 1 crédit</span>
+              </button>
+            </div>
+            <div class="mode-info">
+              <span class="badge badge--ai quota" id="quota" hidden></span>
+              <p class="field__hint" id="mode-hint"></p>
+            </div>
+          </section>
+
+          <!-- 3. Palette -->
+          <section class="group" id="group-palette" aria-labelledby="palette-label">
+            <div class="group__row">
+              <h3 class="group__label" id="palette-label" data-i18n="studio.step.palette">3. Palette</h3>
+              <span class="field__hint" id="palette-current"></span>
+            </div>
+            <div class="palette-grid" role="radiogroup" id="palettes" aria-labelledby="palette-label">
+              <span class="skeleton palette-skel"></span><span class="skeleton palette-skel"></span><span class="skeleton palette-skel"></span>
+              <span class="skeleton palette-skel"></span><span class="skeleton palette-skel"></span><span class="skeleton palette-skel"></span>
+            </div>
+          </section>
+
+          <!-- 4. Style souhaité -->
+          <section class="group" id="group-prompt" aria-labelledby="prompt-step">
+            <div class="group__row">
+              <h3 class="group__label" id="prompt-step" data-i18n="studio.step.prompt">4. Style souhaité</h3>
+              <span class="badge badge--ai" data-i18n="studio.step.prompt_badge">Rendu IA uniquement</span>
+            </div>
+            <div class="prompt-off" id="prompt-off">
+              <p class="field__hint" data-i18n="studio.prompt.fast_note">Disponible en Rendu IA : décrivez la matière (émail, laine, fil…).</p>
+              <button type="button" class="btn btn--quiet btn--sm" id="switch-ai"><span data-icon="sparkle"></span><span data-i18n="studio.prompt.switch_ai">Passer en Rendu IA</span></button>
+            </div>
+            <div class="field" id="prompt-field" hidden>
+              <label class="field__label" for="prompt" data-i18n="studio.prompt.label">Décrivez le style souhaité (optionnel)</label>
+              <textarea class="textarea" id="prompt" rows="3" maxlength="300" aria-describedby="prompt-hint prompt-error"
+                placeholder="ex. : émail plus brillant, tons bleu nuit, laine plus épaisse…" data-i18n-attr="placeholder:studio.prompt.placeholder"></textarea>
+              <div class="prompt-tools">
+                <span class="field__hint" id="prompt-count"></span>
+                <span class="prompt-tools__actions">
+                  <button type="button" class="btn btn--quiet btn--sm undo-btn" id="enhance-undo" hidden data-i18n="studio.assist.undo">Annuler</button>
+                  <button type="button" class="btn btn--ai btn--sm" id="enhance" hidden data-i18n-attr="title:studio.assist.enhance_title">
+                    <span data-icon="sparkle"></span><span class="js-label" data-i18n="studio.assist.enhance">Améliorer</span>
+                  </button>
+                </span>
+              </div>
+              <p class="field__hint" id="prompt-hint" data-i18n="studio.prompt.hint">Agit sur le rendu de la matière, pas sur le motif lui-même.</p>
+              <p class="field__error" id="prompt-error" hidden></p>
+              <div id="enhance-out" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <!-- 5. Réglages avancés -->
+          <details class="disclosure group group--advanced" id="advanced">
+            <summary><span data-i18n="studio.step.advanced">5. Réglages avancés</span></summary>
+            <div class="disclosure__body advanced">
+              <div class="field">
+                <label class="field__label" for="seed" data-i18n="studio.seed.label">Seed</label>
+                <input class="input input--ltr" id="seed" type="number" inputmode="numeric" min="0" max="9007199254740991" step="1"
+                  placeholder="Aléatoire" data-i18n-attr="placeholder:studio.seed.placeholder" aria-describedby="seed-hint seed-error">
+                <p class="field__hint" id="seed-hint" data-i18n="studio.seed.hint">Même seed et mêmes réglages : même motif.</p>
+                <p class="field__error" id="seed-error" hidden></p>
+              </div>
+              <div class="field">
+                <label class="field__label" for="size" data-i18n="studio.size.label">Résolution (px)</label>
+                <input class="input input--ltr" id="size" type="number" inputmode="numeric" min="128" max="1024" step="1"
+                  placeholder="Par défaut selon le mode" data-i18n-attr="placeholder:studio.size.placeholder" aria-describedby="size-hint size-error">
+                <p class="field__hint" id="size-hint" data-i18n="studio.size.hint">De 128 à 1024 px ; une valeur hors bornes est ajustée.</p>
+                <p class="field__error" id="size-error" hidden></p>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Générer : bas du panneau (bureau), barre collante (mobile) -->
+        <div class="gen-bar" id="gen-bar">
+          <p class="gen-bar__cost" id="gen-cost"></p>
+          <button type="submit" class="btn btn--primary btn--lg btn--block gen-bar__btn" id="generate">
+            <span data-icon="star"></span><span class="js-label" data-i18n="studio.generate">Générer le motif</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- ================= Résultat ================= -->
+      <section class="result" id="result" aria-labelledby="result-title">
+        <div class="result__head">
+          <h2 class="result__title" id="result-title" data-i18n="studio.result.title">Résultat</h2>
+          <span id="source-badge"></span>
+        </div>
+
+        <div class="stage" id="stage">
+          <div class="lattice lattice--faint lattice--nofade" aria-hidden="true"></div>
+          <img class="stage__img" id="stage-img" alt="" hidden>
+          <div class="stage__shimmer" aria-hidden="true"><span></span></div>
+          <div class="stage__empty" id="stage-empty">
+            <span class="stage__empty-icon" data-icon="star" data-size="48"></span>
+            <p data-i18n="studio.result.empty">Aucun motif pour l'instant. Choisissez vos réglages puis cliquez sur « Générer le motif ».</p>
+          </div>
+          <div class="stage__loading" id="stage-loading" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="loading-label"></span>
+          </div>
+          <div class="stage__error" id="stage-error" hidden>
+            <span data-icon="alert" data-size="32"></span>
+            <p class="stage__error-title" data-i18n="studio.result.error_title">Échec de la génération</p>
+            <p id="stage-error-text"></p>
           </div>
         </div>
-        <div class="meta-row" id="metaRow" style="display:none;">
-          <span>Moteur : <b id="metaEngine">—</b></span>
-          <span>Résolution : <b id="metaSize">—</b></span>
-          <span>Temps : <b id="metaTime">—</b></span>
-          <span>Seed : <b id="metaSeed">—</b></span>
-          <span id="metaSourceWrap"></span>
-        </div>
-        <div class="notice" id="noticeBox" style="display:none;"></div>
-        <div class="flex gap-8 mt-24">
-          <button class="btn btn-outline" id="downloadBtn" disabled>Télécharger le PNG</button>
-          <button class="btn btn-outline" id="regenBtn" disabled title="Rejoue la dernière requête avec la même seed : image identique. « Générer le motif » tire une nouvelle variante.">Régénérer (mêmes réglages + seed)</button>
+        <p class="sr-only" id="result-status" role="status" aria-live="polite"></p>
+
+        <dl class="meta" id="meta" hidden>
+          <div class="meta__item"><dt data-i18n="studio.meta.mode">Mode</dt><dd id="meta-mode"></dd></div>
+          <div class="meta__item"><dt data-i18n="studio.meta.resolution">Résolution</dt><dd id="meta-size"></dd></div>
+          <div class="meta__item"><dt data-i18n="studio.meta.time">Temps</dt><dd id="meta-time"></dd></div>
+          <div class="meta__item meta__item--seed"><dt data-i18n="studio.meta.seed">Seed</dt>
+            <dd><span id="meta-seed"></span>
+              <button type="button" class="seed-copy" id="copy-seed" data-i18n-attr="aria-label:studio.meta.copy_seed;title:studio.meta.copy_seed"><span data-icon="copy" data-size="16"></span><span class="seed-copy__done" id="copy-done" hidden data-i18n="studio.meta.copied">Copiée</span></button>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="notices" id="notices"></div>
+
+        <div class="result__actions">
+          <button type="button" class="btn btn--secondary" id="download" disabled><span data-icon="download"></span><span data-i18n="studio.download">Télécharger le PNG</span></button>
+          <button type="button" class="btn btn--ghost" id="regenerate" disabled data-i18n-attr="title:studio.regenerate.title"><span data-icon="refresh"></span><span data-i18n="studio.regenerate">Régénérer à l'identique</span></button>
         </div>
 
-        <h3 class="mt-24" style="margin-top:32px;">Historique de session</h3>
-        <div class="gallery-grid" id="galleryGrid"></div>
+        <details class="about disclosure disclosure--boxed" id="about" hidden>
+          <summary><span class="about__summary"><span data-icon="sparkle"></span><span data-i18n="studio.about.title">À propos de ce motif</span></span></summary>
+          <div class="disclosure__body about__body" id="about-body" aria-live="polite"></div>
+        </details>
+      </section>
+    </div>
+
+    <!-- ================= Historique ================= -->
+    <section class="history" aria-labelledby="history-title">
+      <div class="history__head">
+        <h2 class="history__title" id="history-title" data-i18n="studio.history.title">Historique de la session</h2>
+        <p class="field__hint" data-i18n="studio.history.note">Non conservé après fermeture de la page.</p>
       </div>
-
-      <!-- Atelier de réglages -->
-      <div class="panel">
-        <h3>Réglages</h3>
-
-        <div class="field">
-          <label>Type de motif</label>
-          <div class="segmented" id="categorySeg">
-            <button data-value="zellige" class="active">Zellige</button>
-            <button data-value="tapis">Tapis</button>
-            <button data-value="broderie">Broderie</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Mode de rendu</label>
-          <div class="segmented" id="engineSeg">
-            <button data-value="gan" class="active">Rapide (procédural)</button>
-            <button data-value="diffusion">Rendu IA (Gemini)</button>
-          </div>
-          <small class="field-hint" id="engineHint">Instantané et gratuit : motif géométrique procédural (256 px).</small>
-        </div>
-
-        <div class="field" id="promptField" style="display:none;">
-          <label for="promptInput">Décrivez le style souhaité (optionnel)</label>
-          <textarea id="promptInput" maxlength="300" rows="3"
-                    placeholder="ex. : émail plus brillant, tons bleu nuit, laine plus épaisse…"></textarea>
-          <small class="field-hint right" id="promptCount">0 / 300</small>
-        </div>
-
-        <div class="field">
-          <label id="paletteLabel">Palette culturelle</label>
-          <div class="palette-swatches" id="paletteSwatches" role="group" aria-labelledby="paletteLabel"></div>
-        </div>
-
-        <div class="field">
-          <label for="seedInput">Seed (optionnel)</label>
-          <input type="number" id="seedInput" placeholder="aléatoire" min="0" max="9007199254740991" step="1" inputmode="numeric" aria-describedby="seedError" />
-          <small class="field-hint field-error" id="seedError" role="alert" hidden></small>
-        </div>
-
-        <div class="field">
-          <label for="sizeInput">Résolution (px)</label>
-          <input type="number" id="sizeInput" placeholder="défaut selon le moteur" min="128" max="1024" step="1" inputmode="numeric" aria-describedby="sizeHint" />
-          <small class="field-hint" id="sizeHint">Entre 128 et 1024 px ; une valeur hors bornes est ajustée.</small>
-        </div>
-
-        <button class="btn btn-primary btn-block" id="generateBtn">Générer le motif</button>
-        <p style="font-size:0.78rem; margin-top:12px;">
-          Le mode <b>rapide</b> utilise un <b>générateur procédural</b>
-          (géométrie + palettes, 256×256). Le <b>rendu IA</b> est hybride : la
-          géométrie est dessinée par le même générateur (768×768), puis un modèle
-          d'image <b>Google Gemini</b> la re-rend comme un vrai zellige, tapis ou
-          broderie — en cas d'indisponibilité, l'image procédurale est renvoyée.
-          Le GAN et le modèle de diffusion entraînés décrits dans le rapport
-          restent prévus : ils peuvent être branchés dès que des poids sont fournis.
-        </p>
-      </div>
-    </div>
+      <ul class="history__strip" id="history" role="list"></ul>
+      <p class="muted text-sm history__empty" id="history-empty" data-i18n="studio.history.empty">Vos motifs de cette session apparaîtront ici.</p>
+    </section>
   </div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-inner">
-    <small>ZakhrafaAI — Atelier de génération.</small>
-    <small>API locale : <code style="font-family:var(--font-mono)">/api/generate</code></small>
-  </div>
-</footer>
-
-<script src="/assets/js/nav.js"></script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/studio.js"></script>
+<footer id="site-footer"></footer>
+<script type="module" src="/assets/js/studio.js"></script>
 </body>
 </html>
