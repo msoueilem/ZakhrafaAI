@@ -189,8 +189,10 @@ tr:last-child td{ border-bottom:none; }
   border:1px dashed var(--line); border-radius:10px; position:relative; overflow:hidden;
 }
 .canvas-wrap img{ max-width:100%; max-height:520px; border-radius:6px; box-shadow:var(--shadow-lift); }
-.canvas-placeholder{ text-align:center; color:var(--muted); font-size:0.9rem; }
-.canvas-placeholder svg{ margin:0 auto 12px; opacity:0.5; }
+.canvas-placeholder{ max-width:340px; padding:24px 16px; text-align:center; color:var(--muted); font-size:0.9rem; }
+.canvas-placeholder p{ margin:0; color:inherit; }
+/* bloc : centré au-dessus du texte (en ligne, l'étoile s'alignait sur la ligne de base) */
+.canvas-placeholder svg{ display:block; margin:0 auto 12px; opacity:0.5; }
 
 .meta-row{ display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; font-family:var(--font-mono); font-size:0.78rem; color:var(--muted); }
 .meta-row b{ color:var(--gold-soft); }
