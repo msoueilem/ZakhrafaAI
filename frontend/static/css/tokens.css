@@ -155,6 +155,9 @@
   --lh-tight: 1.3;
   --lh-snug: 1.45;
   --lh-body: 1.8;
+  /* IBM Plex Sans Arabic est peu lisible à 12px : petites tailles relevées d'un cran */
+  --fs-xs: 0.875rem;   /* 14 (12 en latin) */
+  --fs-sm: 0.9375rem;  /* 15 (14 en latin) */
 }
 
 /* ---------- Light theme (optional, "tadelakt") ---------- */

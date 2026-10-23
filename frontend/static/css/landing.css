@@ -112,7 +112,7 @@
 .tile-badge .icon { color: var(--accent); }
 .tile-badge--ai { color: var(--majorelle-300); border-color: rgb(157 143 255 / 0.5); }
 .tile-badge--ai .icon { color: var(--ai); }
-:lang(ar) .tile-badge { font-size: 0.75rem; }
+:lang(ar) .tile-badge { font-size: 0.8125rem; }
 /* tuiles du hero trop petites pour un libellé long : icône seule, libellé pour lecteurs d'écran */
 @media (max-width: 899.98px) {
   .hero-tile .tile-badge { padding: 4px; }
