@@ -202,9 +202,11 @@ zakhrafaai/
         ├── index.html          # accueil / présentation du produit
         ├── studio.html         # atelier de réglages + galerie
         ├── dashboard.html      # tableau de bord
-        ├── css/styles.css
-        ├── js/{api,studio,dashboard}.js
-        └── img/                # échantillons pré-générés
+        ├── FOUNDATION.md       # conventions communes (squelette de page, i18n, composants, RTL)
+        ├── css/                # tokens.css + base.css (communs) ; landing/studio/dashboard.css
+        ├── js/                 # boot, i18n, shell (en-tête/pied), http, ui, icons + un script par page
+        ├── i18n/{fr,ar,en}/    # textes : common.json + un fichier par page
+        └── img/                # ornement SVG + galerie (rendus réels, WebP)
 ```
 
 ## API

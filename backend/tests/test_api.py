@@ -225,9 +225,10 @@ def test_dashboard_lists_at_most_8_recent(client):
 # --- frontend statique ---------------------------------------------------------
 
 @pytest.mark.parametrize("path", ["/", "/studio", "/dashboard",
-                                  "/assets/css/styles.css", "/assets/js/api.js",
+                                  "/assets/css/tokens.css", "/assets/css/base.css",
+                                  "/assets/js/i18n.js", "/assets/js/shell.js",
                                   "/assets/js/studio.js", "/assets/js/dashboard.js",
-                                  "/assets/js/nav.js"])
+                                  "/assets/js/landing.js", "/assets/i18n/ar/common.json"])
 def test_static_pages(client, path):
     assert client.get(path).status_code == 200
 

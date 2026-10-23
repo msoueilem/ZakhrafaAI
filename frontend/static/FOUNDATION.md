@@ -1,5 +1,5 @@
 # Fondation front ZakhrafaAI : contrat des pages (landing / studio / dashboard)
-Statique, sans build. URL : `/assets/...` = `frontend/static/...`. Démo vivante : `/assets/_foundation.html` (à supprimer).
+Statique, sans build. URL : `/assets/...` = `frontend/static/...`.
 **Ne pas modifier** `tokens.css`, `base.css`, `boot.js`, `i18n.js`, `shell.js`, `http.js`, `ui.js`, `icons.js` ni `i18n/*/common.json`
 sans accord : CSS propre à la page dans `css/<page>.css`, JS dans `js/<page>.js` (module ES).
 
