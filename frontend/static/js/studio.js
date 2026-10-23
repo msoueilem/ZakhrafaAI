@@ -119,6 +119,17 @@
     els.canvasWrap.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
   }
 
+  // Masque les détails (méta, badge, notice) et désactive Télécharger /
+  // Régénérer : ils ne doivent jamais décrire autre chose que l'image affichée.
+  function clearResultDetails() {
+    els.metaRow.style.display = "none";
+    els.metaSourceWrap.replaceChildren();
+    els.noticeBox.textContent = "";
+    els.noticeBox.style.display = "none";
+    els.downloadBtn.disabled = true;
+    els.regenBtn.disabled = true;
+  }
+
   function setLoading(request) {
     const text = request.engine === "diffusion" && ai && ai.enabled
       ? "Rendu IA en cours… (10–30 s)"
@@ -128,7 +139,7 @@
         <div class="spinner"></div>
         <span>${text}</span>
       </div>`;
-    els.noticeBox.style.display = "none";
+    clearResultDetails();
     els.generateBtn.disabled = true;
     els.generateBtn.textContent = "Génération…";
     revealResultArea();
@@ -172,9 +183,14 @@
   }
 
   function renderError(message) {
+    // plus de résultat valide : Télécharger / Régénérer restent désactivés
+    // jusqu'au prochain succès
+    last = null;
+    clearResultDetails();
     // textContent : le message vient du serveur, on ne l'interprète pas en HTML
     const box = document.createElement("div");
     box.className = "canvas-placeholder";
+    box.setAttribute("role", "alert");
     box.style.color = "var(--danger)";
     box.textContent = `Échec de la génération : ${message}`;
     els.canvasWrap.innerHTML = "";
@@ -206,7 +222,9 @@
     } finally {
       els.generateBtn.disabled = false;
       els.generateBtn.textContent = "Générer le motif";
-      if (request.engine === "diffusion") refreshAI(); // quota restant à jour
+      // succès ou échec : le serveur a pu terminer (et décompter) le rendu IA
+      // même si la réponse n'est pas arrivée, on relit donc le quota restant
+      if (request.engine === "diffusion") refreshAI();
     }
   }
 

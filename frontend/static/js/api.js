@@ -25,18 +25,36 @@ const ZakhrafaAPI = (() => {
     return res.json();
   }
 
-  // `prompt` (souhait de style) n'est pris en compte qu'en rendu IA
+  const NETWORK_ERROR = "Connexion interrompue — réessayez.";
+
+  // `prompt` (souhait de style) n'est pris en compte qu'en rendu IA.
+  // Les erreurs sont traduites en message lisible : coupure réseau
+  // (TypeError « Failed to fetch »), erreur serveur/proxy (5xx), ou détail
+  // renvoyé par l'API pour les requêtes refusées (4xx).
   async function generate({ category, engine, palette, seed, size, prompt }) {
-    const res = await fetch(`${BASE}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, engine, palette, seed, size, prompt: prompt || null }),
-    });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(formatDetail(body.detail) || `Échec de la génération (HTTP ${res.status}).`);
+    let res;
+    try {
+      res = await fetch(`${BASE}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, engine, palette, seed, size, prompt: prompt || null }),
+      });
+    } catch (_) {
+      throw new Error(NETWORK_ERROR);
     }
-    return res.json();
+    if (!res.ok) {
+      if (res.status >= 500) {
+        throw new Error(`Service momentanément indisponible (HTTP ${res.status}) — réessayez.`);
+      }
+      const body = await res.json().catch(() => ({}));
+      throw new Error(formatDetail(body.detail) || `Requête refusée (HTTP ${res.status}).`);
+    }
+    try {
+      return await res.json();
+    } catch (_) {
+      // corps tronqué : la connexion a été coupée pendant la réponse
+      throw new Error(NETWORK_ERROR);
+    }
   }
 
   async function dashboard() {
