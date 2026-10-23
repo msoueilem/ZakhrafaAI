@@ -8,7 +8,8 @@ Assistant de prompt DeepSeek — endpoints `/api/assist/*`.
 
 Erreurs : corps `{"code": "..."}` (codes machine, traduits par le frontend) :
   503 assist_disabled, 429 assist_ip_limit / assist_daily_limit (avec
-  Retry-After), 502 assist_error ; 422 validation FastAPI standard.
+  Retry-After), 502 assist_error ; 422 {detail, code: "validation", fields}
+  (gestionnaire global de app.main).
 La logique (prompts, quotas, cache, appels HTTP) vit dans services/deepseek.py.
 """
 from __future__ import annotations

@@ -35,7 +35,7 @@ def isolated_deepseek(tmp_path, monkeypatch):
 
 @pytest.fixture()
 def client():
-    main._HISTORY.clear()
+    main.reset_stats()
     with TestClient(main.app) as c:
         yield c
-    main._HISTORY.clear()
+    main.reset_stats()

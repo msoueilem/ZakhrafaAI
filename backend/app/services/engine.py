@@ -34,7 +34,7 @@ import os
 import random
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from PIL import Image
 
@@ -75,16 +75,29 @@ def image_to_data_url(img: Image.Image) -> str:
     return f"data:image/png;base64,{b64}"
 
 
+class InvalidParam(ValueError):
+    """Paramètre invalide ; `field` est le nom du champ de la requête en cause."""
+
+    def __init__(self, field: str, message: str):
+        super().__init__(message)
+        self.field = field
+
+
 class GenerationResult:
     def __init__(self, image: Image.Image, engine_used: str, source: str, elapsed_ms: float, seed: int,
-                 model: Optional[str] = None, notice: Optional[str] = None):
+                 model: Optional[str] = None, notice: Optional[str] = None,
+                 notice_code: Optional[str] = None, notice_params: Optional[Dict[str, Any]] = None,
+                 palette: Optional[str] = None):
         self.image = image
         self.engine_used = engine_used
         self.source = source  # "trained_weights" | "procedural" | "gemini"
         self.elapsed_ms = elapsed_ms
         self.seed = seed
         self.model = model  # modèle Gemini si source == "gemini"
-        self.notice = notice  # raison du repli procédural en mode IA
+        self.notice = notice  # raison du repli procédural en mode IA (français)
+        self.notice_code = notice_code  # code machine de cette raison (cf. gemini.CODE_*)
+        self.notice_params = notice_params or {}
+        self.palette = palette  # palette effectivement utilisée
 
     def to_dict(self):
         return {
@@ -97,6 +110,8 @@ class GenerationResult:
             "height": self.image.height,
             "model": self.model,
             "notice": self.notice,
+            "notice_code": self.notice_code,
+            "notice_params": dict(self.notice_params),
         }
 
 
@@ -112,9 +127,9 @@ def generate(
     """`prompt` (souhait de style) n'est utilisé qu'en mode « diffusion »
     (rendu IA) ; `client_ip` sert à la limite de rendus IA par adresse."""
     if category not in VALID_CATEGORIES:
-        raise ValueError(f"category doit être l'une de {VALID_CATEGORIES}")
+        raise InvalidParam("category", f"category doit être l'une de {VALID_CATEGORIES}")
     if engine not in VALID_ENGINES:
-        raise ValueError(f"engine doit être l'une de {VALID_ENGINES}")
+        raise InvalidParam("engine", f"engine doit être l'une de {VALID_ENGINES}")
     if palette not in VALID_PALETTES:
         palette = "zellige_classique"
 
@@ -122,9 +137,10 @@ def generate(
     t0 = time.time()
 
     source = "procedural"
-    model = notice = None
+    model = notice = notice_code = None
+    notice_params: Dict[str, Any] = {}
     if engine == "diffusion":
-        image, source, model, notice = _generate_ai(category, palette, seed, size, prompt, client_ip)
+        image, source, model, notice, notice_code, notice_params = _generate_ai(category, palette, seed, size, prompt, client_ip)
     elif engine == "gan" and _gan_weights_available(category):
         try:
             image = _generate_with_torch_gan(category, seed, size)
@@ -141,13 +157,14 @@ def generate(
 
     elapsed_ms = (time.time() - t0) * 1000
     return GenerationResult(image=image, engine_used=engine, source=source, elapsed_ms=elapsed_ms, seed=seed,
-                            model=model, notice=notice)
+                            model=model, notice=notice, notice_code=notice_code,
+                            notice_params=notice_params, palette=palette)
 
 
 def _generate_ai(category: str, palette: str, seed: int, size: Optional[int],
                  prompt: Optional[str], client_ip: Optional[str]):
     """Procédural -> Gemini, avec repli procédural. Renvoie
-    (image, source, model, notice)."""
+    (image, source, model, notice, notice_code, notice_params)."""
     target = resolve_size("diffusion", size)
     procedural = GENERATORS[category].generate(
         GenParams(category=category, engine="diffusion", palette=palette, seed=seed, size=target))
@@ -164,8 +181,8 @@ def _generate_ai(category: str, palette: str, seed: int, size: Optional[int],
         size=target, prompt=prompt, client_ip=client_ip,
     )
     if outcome.ok:
-        return outcome.image, "gemini", outcome.model, None
-    return procedural, "procedural", None, outcome.notice
+        return outcome.image, "gemini", outcome.model, None, None, {}
+    return procedural, "procedural", None, outcome.notice, outcome.notice_code, outcome.notice_params
 
 
 @functools.lru_cache(maxsize=len(VALID_CATEGORIES))

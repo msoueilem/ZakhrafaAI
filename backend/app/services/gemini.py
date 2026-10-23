@@ -40,10 +40,10 @@ import os
 import threading
 import time
 from collections import OrderedDict, deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Deque, Dict, Optional, Tuple
+from typing import Any, Deque, Dict, Optional, Tuple
 
 import httpx
 from PIL import Image, UnidentifiedImageError
@@ -179,6 +179,14 @@ def build_prompt(category: str, user_prompt: Optional[str] = None) -> str:
 # Résultat
 # ---------------------------------------------------------------------------
 
+# Codes machine des replis (traduits par le frontend ; `notice` reste en français)
+CODE_DISABLED = "ai_disabled"        # pas de clé GEMINI_API_KEY
+CODE_DAILY_LIMIT = "daily_limit"     # params {"n": quota journalier}
+CODE_IP_LIMIT = "ip_limit"           # params {"n": limite par IP sur 10 min}
+CODE_TIMEOUT = "timeout"             # délai dépassé
+CODE_BLOCKED = "blocked"             # aucune image renvoyée / blocage de sécurité
+CODE_SERVICE_ERROR = "service_error"  # toute autre erreur du service IA
+
 NOTICE_DISABLED = ("Rendu IA indisponible : clé GEMINI_API_KEY absente sur le serveur. "
                    "Image issue du générateur procédural.")
 
@@ -203,6 +211,8 @@ class RenderOutcome:
     notice: Optional[str] = None
     model: Optional[str] = None
     cached: bool = False
+    notice_code: Optional[str] = None
+    notice_params: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
@@ -210,11 +220,13 @@ class RenderOutcome:
 
 
 class GeminiError(Exception):
-    """Échec d'un appel Gemini ; `reason` est un libellé français sans secret."""
+    """Échec d'un appel Gemini ; `reason` est un libellé français sans secret,
+    `code` le code machine correspondant (timeout | blocked | service_error)."""
 
-    def __init__(self, reason: str):
+    def __init__(self, reason: str, code: str = CODE_SERVICE_ERROR):
         super().__init__(reason)
         self.reason = reason
+        self.code = code
 
 
 # ---------------------------------------------------------------------------
@@ -336,7 +348,7 @@ class GeminiRenderer:
     ) -> RenderOutcome:
         cfg = self.config
         if not cfg.enabled:
-            return RenderOutcome(notice=NOTICE_DISABLED)
+            return RenderOutcome(notice=NOTICE_DISABLED, notice_code=CODE_DISABLED)
 
         key: CacheKey = (category, palette, seed, size, prompt or "", cfg.model)
         cached = self._cache_get(key)
@@ -346,9 +358,11 @@ class GeminiRenderer:
         with self._lock:
             self._roll_day()
             if self._count + self._inflight >= cfg.daily_limit:
-                return RenderOutcome(notice=_notice_daily(cfg.daily_limit))
+                return RenderOutcome(notice=_notice_daily(cfg.daily_limit), notice_code=CODE_DAILY_LIMIT,
+                                     notice_params={"n": cfg.daily_limit})
             if not self._ip_allowed(client_ip or "inconnue", time.time()):
-                return RenderOutcome(notice=_notice_ip(cfg.per_ip_limit))
+                return RenderOutcome(notice=_notice_ip(cfg.per_ip_limit), notice_code=CODE_IP_LIMIT,
+                                     notice_params={"n": cfg.per_ip_limit})
             self._inflight += 1
 
         success = False
@@ -365,10 +379,10 @@ class GeminiRenderer:
             return RenderOutcome(image=image, model=cfg.model)
         except GeminiError as exc:
             logger.warning("Rendu Gemini échoué (%s) : %s", cfg.model, exc.reason)
-            return RenderOutcome(notice=_notice_error(exc.reason))
+            return RenderOutcome(notice=_notice_error(exc.reason), notice_code=exc.code)
         except Exception:  # filet de sécurité : jamais de 500 à cause de Gemini
             logger.exception("Erreur inattendue pendant le rendu Gemini (%s)", cfg.model)
-            return RenderOutcome(notice=_notice_error("erreur interne"))
+            return RenderOutcome(notice=_notice_error("erreur interne"), notice_code=CODE_SERVICE_ERROR)
         finally:
             with self._lock:
                 self._inflight -= 1
@@ -403,7 +417,7 @@ class GeminiRenderer:
         try:
             res = self._http().post(url, json=body, headers={"x-goog-api-key": self.config.api_key or ""})
         except httpx.TimeoutException as exc:
-            raise GeminiError("délai dépassé") from exc
+            raise GeminiError("délai dépassé", CODE_TIMEOUT) from exc
         except httpx.HTTPError as exc:
             raise GeminiError(f"connexion impossible : {type(exc).__name__}") from exc
 
@@ -442,7 +456,7 @@ def _extract_image(payload: dict) -> Image.Image:
     candidates = payload.get("candidates") or []
     if not candidates:
         block = feedback.get("blockReason")
-        raise GeminiError(f"requête bloquée ({block})" if block else "aucune image renvoyée")
+        raise GeminiError(f"requête bloquée ({block})" if block else "aucune image renvoyée", CODE_BLOCKED)
 
     found: Optional[str] = None
     finish = None
@@ -456,7 +470,7 @@ def _extract_image(payload: dict) -> Image.Image:
                 found = inline.get("data")
     if not found:
         detail = f", fin : {finish}" if finish and finish != "STOP" else ""
-        raise GeminiError(f"aucune image renvoyée{detail}")
+        raise GeminiError(f"aucune image renvoyée{detail}", CODE_BLOCKED)
     try:
         return _open_png(base64.b64decode(found))
     except (binascii.Error, UnidentifiedImageError, OSError) as exc:

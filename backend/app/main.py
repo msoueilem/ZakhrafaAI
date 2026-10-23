@@ -7,25 +7,36 @@ Endpoints :
   POST /api/generate               -> génère une image (voir GenerateRequest)
   GET  /api/dashboard              -> statistiques globales du serveur (en mémoire, cf. §7)
 
+Erreurs de validation (422, toutes routes) : `{"detail": ..., "code": "validation",
+"fields": [noms des champs en cause]}` — `detail` reste la liste FastAPI standard
+(ou un message pour les erreurs métier de /api/generate).
+
 Sert aussi le frontend statique (frontend/static) à la racine "/".
 """
 from __future__ import annotations
 
+import base64
+import io
 import random
+import threading
 import time
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Annotated, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from PIL import Image, features
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.generators.utils import PALETTE_LABELS, PALETTES
 from app.routers import assist
-from app.services import engine, gemini
+from app.services import deepseek, engine, gemini
 
 APP_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = APP_DIR.parent
@@ -51,6 +62,36 @@ app.add_middleware(
 
 # assistant de prompt DeepSeek (/api/assist/*)
 app.include_router(assist.router)
+
+
+# ---------------------------------------------------------------------------
+# Erreurs de validation : code machine + champs en cause
+# ---------------------------------------------------------------------------
+
+_LOC_ROOTS = {"body", "query", "path", "header", "cookie"}
+
+
+def _fields_from_errors(errors) -> List[str]:
+    """Noms des champs (1er niveau) cités par les erreurs pydantic, sans doublon."""
+    fields: List[str] = []
+    for err in errors:
+        loc = [part for part in err.get("loc", ()) if isinstance(part, str)]
+        if loc and loc[0] in _LOC_ROOTS:
+            loc = loc[1:]
+        if loc and loc[0] not in fields:
+            fields.append(loc[0])
+    return fields
+
+
+def validation_error(detail: Any, fields: List[str]) -> JSONResponse:
+    return JSONResponse(status_code=422, content={
+        "detail": jsonable_encoder(detail), "code": "validation", "fields": fields})
+
+
+@app.exception_handler(RequestValidationError)
+async def _on_validation_error(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    return validation_error(errors, _fields_from_errors(errors))
 
 
 MAX_SEED = 2**53 - 1
@@ -86,7 +127,11 @@ class GenerateResponse(BaseModel):
     width: int
     height: int
     model: Optional[str] = None
-    notice: Optional[str] = None
+    notice: Optional[str] = None  # message français (rétrocompatibilité)
+    # code machine du repli IA, traduit par le frontend :
+    # ai_disabled | daily_limit | ip_limit | timeout | blocked | service_error
+    notice_code: Optional[str] = None
+    notice_params: Dict[str, Any] = Field(default_factory=dict)  # ex. {"n": 30}
 
 
 class HistoryItem(BaseModel):
@@ -95,13 +140,41 @@ class HistoryItem(BaseModel):
     engine: str
     source: str  # procedural | gemini | trained_weights
     date: str  # ISO 8601 UTC, ex. « 2026-10-23T01:33:00Z »
+    seed: int
+    palette: str
+    thumb: Optional[str] = None  # data URL WebP (ou JPEG) 160x160
 
 
 # ---------------------------------------------------------------------------
 # état "session" en mémoire pour le tableau de bord (démo, non persistant)
 # ---------------------------------------------------------------------------
 
-_HISTORY: List[dict] = []
+RECENT_MAX = 8
+THUMB_SIZE = 160
+THUMB_QUALITY = 70
+_THUMB_FORMAT = "WEBP" if features.check("webp") else "JPEG"
+
+_HISTORY: List[dict] = []  # RECENT_MAX dernières générations (avec vignette)
+# compteurs cumulés depuis le démarrage (indépendants de la taille de _HISTORY)
+_TOTALS: Dict[str, Counter] = {"category": Counter(), "engine": Counter(), "source": Counter()}
+_STATS_LOCK = threading.Lock()
+
+
+def reset_stats() -> None:
+    with _STATS_LOCK:
+        _HISTORY.clear()
+        for counter in _TOTALS.values():
+            counter.clear()
+
+
+def make_thumb(img: Image.Image) -> str:
+    """Vignette légère (data URL) pour le tableau de bord."""
+    thumb = img.convert("RGB")
+    thumb.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.BILINEAR, reducing_gap=2.0)
+    buf = io.BytesIO()
+    thumb.save(buf, format=_THUMB_FORMAT, quality=THUMB_QUALITY)
+    mime = "image/webp" if _THUMB_FORMAT == "WEBP" else "image/jpeg"
+    return f"data:{mime};base64,{base64.b64encode(buf.getvalue()).decode('ascii')}"
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +209,8 @@ def meta():
             {"id": pid, "label": PALETTE_LABELS.get(pid, pid), "colors": colors}
             for pid, colors in PALETTES.items()
         ],
+        # état de l'assistant DeepSeek (même contenu que /api/assist/status)
+        "assist": deepseek.get_assistant().status(),
     }
 
 
@@ -161,7 +236,8 @@ def generate(req: GenerateRequest, request: Request):
             client_ip=client_ip(request),
         )
     except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        fields = [exc.field] if isinstance(exc, engine.InvalidParam) else []
+        return validation_error(str(exc), fields)
 
     # date en UTC explicite : le tableau de bord l'affiche à l'heure locale du navigateur
     entry = {
@@ -170,32 +246,37 @@ def generate(req: GenerateRequest, request: Request):
         "engine": req.engine,
         "source": result.source,
         "date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "seed": result.seed,
+        "palette": result.palette or req.palette,
+        "thumb": make_thumb(result.image),
     }
-    _HISTORY.insert(0, entry)
-    del _HISTORY[50:]
+    with _STATS_LOCK:
+        _TOTALS["category"][req.category] += 1
+        _TOTALS["engine"][req.engine] += 1
+        _TOTALS["source"][result.source] += 1
+        _HISTORY.insert(0, entry)
+        del _HISTORY[RECENT_MAX:]
 
     return result.to_dict()
 
 
 @app.get("/api/dashboard")
 def dashboard():
-    counts = {"zellige": 0, "tapis": 0, "broderie": 0}
-    engines = {"gan": 0, "diffusion": 0}
-    # source réelle : en rendu IA, « procedural » signifie un repli
-    sources = {"procedural": 0, "gemini": 0, "trained_weights": 0}
-    for h in _HISTORY:
-        if h["category"] in counts:
-            counts[h["category"]] += 1
-        if h["engine"] in engines:
-            engines[h["engine"]] += 1
-        if h["source"] in sources:
-            sources[h["source"]] += 1
+    """Totaux cumulés depuis le démarrage du serveur ; `derniers_motifs` :
+    les RECENT_MAX dernières générations, avec vignette."""
+    with _STATS_LOCK:
+        counts = {k: _TOTALS["category"][k] for k in ("zellige", "tapis", "broderie")}
+        engines = {k: _TOTALS["engine"][k] for k in ("gan", "diffusion")}
+        # source réelle : en rendu IA, « procedural » signifie un repli
+        sources = {k: _TOTALS["source"][k] for k in ("procedural", "gemini", "trained_weights")}
+        total = sum(_TOTALS["category"].values())
+        recent = [dict(h) for h in _HISTORY[:RECENT_MAX]]
     return {
-        "total_motifs": len(_HISTORY),
+        "total_motifs": total,
         "repartition_par_categorie": counts,
         "repartition_par_moteur": engines,
         "repartition_par_source": sources,
-        "derniers_motifs": _HISTORY[:8],
+        "derniers_motifs": recent,
     }
 
 
