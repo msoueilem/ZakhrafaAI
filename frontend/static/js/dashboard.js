@@ -1,7 +1,7 @@
 (() => {
   const CAT_LABELS = { zellige: "Zellige", tapis: "Tapis", broderie: "Broderie" };
   // ids d'API conservés (gan / diffusion), libellés honnêtes côté interface
-  const ENGINE_LABELS = { gan: "Rapide", diffusion: "Détaillé" };
+  const ENGINE_LABELS = { gan: "Rapide", diffusion: "Rendu IA" };
 
   async function load() {
     try {

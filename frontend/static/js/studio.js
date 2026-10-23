@@ -16,6 +16,10 @@
     size: null,
   };
 
+  // état du rendu IA d'après /api/meta (null tant qu'inconnu)
+  let ai = null;
+  const PROMPT_MAX = 300;
+
   const els = {
     categorySeg: document.getElementById("categorySeg"),
     engineSeg: document.getElementById("engineSeg"),
@@ -33,6 +37,11 @@
     metaSeed: document.getElementById("metaSeed"),
     metaSourceWrap: document.getElementById("metaSourceWrap"),
     galleryGrid: document.getElementById("galleryGrid"),
+    engineHint: document.getElementById("engineHint"),
+    promptField: document.getElementById("promptField"),
+    promptInput: document.getElementById("promptInput"),
+    promptCount: document.getElementById("promptCount"),
+    noticeBox: document.getElementById("noticeBox"),
   };
 
   // Dernier résultat + paramètres de la requête qui l'a produit (le nom du
@@ -57,22 +66,57 @@
     });
   }
 
-  function wireSegmented(container, key) {
+  function wireSegmented(container, key, onChange) {
     container.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
         container.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         state[key] = btn.dataset.value;
+        if (onChange) onChange();
       });
     });
   }
 
-  function setLoading() {
+  // Texte d'aide du mode choisi + champ « style souhaité » (rendu IA seulement)
+  function renderEngineHint() {
+    const isAI = state.engine === "diffusion";
+    els.promptField.style.display = isAI ? "" : "none";
+    if (!isAI) {
+      els.engineHint.textContent = "Instantané et gratuit : motif géométrique procédural (256 px).";
+      return;
+    }
+    if (!ai) {
+      els.engineHint.textContent = "Géométrie procédurale + rendu Gemini (768 px) ; repli sur le procédural si le service IA est indisponible.";
+    } else if (!ai.enabled) {
+      els.engineHint.textContent = "Rendu IA indisponible sur ce serveur (clé Gemini absente) : ce mode renvoie le motif procédural 768 px.";
+    } else {
+      els.engineHint.textContent = `Géométrie procédurale + rendu Gemini (${ai.model}), 768 px. Rendus IA restants aujourd'hui : ${ai.remaining_today}.`;
+    }
+  }
+
+  async function refreshAI() {
+    try {
+      ai = (await ZakhrafaAPI.meta()).ai || null;
+    } catch (_) {
+      ai = null;
+    }
+    renderEngineHint();
+  }
+
+  function updatePromptCount() {
+    els.promptCount.textContent = `${els.promptInput.value.length} / ${PROMPT_MAX}`;
+  }
+
+  function setLoading(request) {
+    const text = request.engine === "diffusion" && ai && ai.enabled
+      ? "Rendu IA en cours… (10–30 s)"
+      : "Génération en cours…";
     els.canvasWrap.innerHTML = `
       <div class="loading-shimmer">
         <div class="spinner"></div>
-        <span>Génération en cours…</span>
+        <span>${text}</span>
       </div>`;
+    els.noticeBox.style.display = "none";
     els.generateBtn.disabled = true;
     els.generateBtn.textContent = "Génération…";
   }
@@ -86,12 +130,21 @@
     img.alt = `Motif ${request.category} généré`;
     els.canvasWrap.appendChild(img);
     els.metaRow.style.display = "flex";
-    els.metaEngine.textContent = result.engine === "gan" ? "Rapide" : "Détaillé";
+    els.metaEngine.textContent = result.engine === "gan" ? "Rapide" : "Rendu IA";
     els.metaSize.textContent = `${result.width}×${result.height}`;
     els.metaTime.textContent = `${result.elapsed_ms} ms`;
     els.metaSeed.textContent = result.seed;
-    const label = result.source === "trained_weights" ? "Poids entraînés" : "Générateur procédural";
-    els.metaSourceWrap.innerHTML = `<span class="badge-source ${result.source}"><span class="dot"></span>${label}</span>`;
+    const label = result.source === "gemini"
+      ? `Rendu IA · ${result.model}`
+      : result.source === "trained_weights" ? "Poids entraînés" : "Générateur procédural";
+    // textContent : nom du modèle et notice viennent du serveur
+    const badge = document.createElement("span");
+    badge.className = `badge-source ${result.source}`;
+    badge.innerHTML = `<span class="dot"></span>`;
+    badge.appendChild(document.createTextNode(label));
+    els.metaSourceWrap.replaceChildren(badge);
+    els.noticeBox.textContent = result.notice || "";
+    els.noticeBox.style.display = result.notice ? "" : "none";
     els.downloadBtn.disabled = false;
     els.regenBtn.disabled = false;
 
@@ -124,13 +177,14 @@
       palette: state.palette,
       seed: Number.isNaN(seedVal) ? null : seedVal,
       size: Number.isNaN(sizeVal) ? null : sizeVal,
+      prompt: state.engine === "diffusion" ? els.promptInput.value.trim() || null : null,
     };
   }
 
   // « Générer » : réglages courants (nouvelle seed si le champ est vide).
   // « Régénérer » : rejoue exactement la dernière requête, seed comprise.
   async function doGenerate(request) {
-    setLoading();
+    setLoading(request);
     try {
       const result = await ZakhrafaAPI.generate(request);
       renderResult(result, request);
@@ -139,6 +193,7 @@
     } finally {
       els.generateBtn.disabled = false;
       els.generateBtn.textContent = "Générer le motif";
+      if (request.engine === "diffusion") refreshAI(); // quota restant à jour
     }
   }
 
@@ -158,6 +213,9 @@
   });
 
   wireSegmented(els.categorySeg, "category");
-  wireSegmented(els.engineSeg, "engine");
+  wireSegmented(els.engineSeg, "engine", renderEngineHint);
+  els.promptInput.addEventListener("input", updatePromptCount);
   renderPalettes();
+  updatePromptCount();
+  refreshAI();
 })();

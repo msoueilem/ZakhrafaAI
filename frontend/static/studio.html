@@ -55,6 +55,7 @@
           <span>Seed : <b id="metaSeed">—</b></span>
           <span id="metaSourceWrap"></span>
         </div>
+        <div class="notice" id="noticeBox" style="display:none;"></div>
         <div class="flex gap-8 mt-24">
           <button class="btn btn-outline" id="downloadBtn" disabled>Télécharger le PNG</button>
           <button class="btn btn-outline" id="regenBtn" disabled title="Rejoue la dernière requête avec la même seed : image identique. « Générer le motif » tire une nouvelle variante.">Régénérer (mêmes réglages + seed)</button>
@@ -80,9 +81,17 @@
         <div class="field">
           <label>Mode de rendu</label>
           <div class="segmented" id="engineSeg">
-            <button data-value="gan" class="active">Rapide (256px)</button>
-            <button data-value="diffusion">Détaillé (768px)</button>
+            <button data-value="gan" class="active">Rapide (procédural)</button>
+            <button data-value="diffusion">Rendu IA (Gemini)</button>
           </div>
+          <small class="field-hint" id="engineHint">Instantané et gratuit : motif géométrique procédural (256 px).</small>
+        </div>
+
+        <div class="field" id="promptField" style="display:none;">
+          <label for="promptInput">Décrivez le style souhaité (optionnel)</label>
+          <textarea id="promptInput" maxlength="300" rows="3"
+                    placeholder="ex. : émail plus brillant, tons bleu nuit, laine plus épaisse…"></textarea>
+          <small class="field-hint right" id="promptCount">0 / 300</small>
         </div>
 
         <div class="field">
@@ -102,11 +111,13 @@
 
         <button class="btn btn-primary btn-block" id="generateBtn">Générer le motif</button>
         <p style="font-size:0.78rem; margin-top:12px;">
-          Les motifs sont produits par un <b>générateur procédural</b>
-          (géométrie + palettes), pas par un modèle entraîné. Le mode rapide
-          cible 256×256 et le mode détaillé 768×768, comme le GAN et le modèle
-          de diffusion prévus dans le rapport ; ces modèles peuvent être branchés
-          à la place du générateur dès que des poids entraînés sont fournis.
+          Le mode <b>rapide</b> utilise un <b>générateur procédural</b>
+          (géométrie + palettes, 256×256). Le <b>rendu IA</b> est hybride : la
+          géométrie est dessinée par le même générateur (768×768), puis un modèle
+          d'image <b>Google Gemini</b> la re-rend comme un vrai zellige, tapis ou
+          broderie — en cas d'indisponibilité, l'image procédurale est renvoyée.
+          Le GAN et le modèle de diffusion entraînés décrits dans le rapport
+          restent prévus : ils peuvent être branchés dès que des poids sont fournis.
         </p>
       </div>
     </div>

@@ -37,8 +37,10 @@
       <p style="font-size:1.05rem; max-width:520px;">
         ZakhrafaAI génère des motifs inspirés de l'artisanat marocain avec un
         générateur procédural qui encode leurs codes visuels (symétrie, répétition,
-        palettes). L'architecture prévue par le rapport — un GAN rapide et un modèle
-        de diffusion haute fidélité — est intégrée au code et peut être branchée.
+        palettes), puis, en mode « Rendu IA », les fait re-rendre par un modèle
+        d'image Google Gemini comme de vrais carreaux, tapis ou broderies.
+        L'architecture prévue par le rapport — un GAN rapide et un modèle
+        de diffusion entraînés — est intégrée au code et peut être branchée.
         Sans jamais remplacer le maâlem : un outil d'exploration et de création assistée.
       </p>
       <div class="hero-actions">
@@ -47,8 +49,8 @@
       </div>
       <div class="hero-stats">
         <div class="hero-stat"><b>3</b><span>catégories : zellige, tapis, broderie</span></div>
-        <div class="hero-stat"><b>2</b><span>modes de rendu : rapide / détaillé</span></div>
-        <div class="hero-stat"><b>768²</b><span>résolution du mode détaillé</span></div>
+        <div class="hero-stat"><b>2</b><span>modes : rapide (procédural) / rendu IA</span></div>
+        <div class="hero-stat"><b>768²</b><span>résolution du rendu IA</span></div>
       </div>
     </div>
     <div class="hero-visual">
@@ -104,7 +106,7 @@
         <div class="eyebrow">Architecture prévue · rapport</div>
         <h2>GAN vs modèle de diffusion</h2>
         <p>Synthèse du rapport (§8) comparant deux familles de modèles en qualité visuelle, contrôle créatif, stabilité d'apprentissage et temps d'inférence.</p>
-        <p>Ces modèles ne tournent pas dans cette démo : l'atelier utilise un générateur procédural, avec un mode rapide et un mode détaillé qui reprennent leurs résolutions. Le code d'intégration (<code>backend/app/models/</code>) permet de brancher des poids entraînés.</p>
+        <p>Ces modèles entraînés ne tournent pas dans cette démo. L'atelier propose un mode rapide procédural (256 px) et un rendu IA hybride : géométrie procédurale (768 px) re-rendue par un modèle d'image Google Gemini. Le code d'intégration (<code>backend/app/models/</code>) permet de brancher des poids entraînés.</p>
       </div>
       <div class="table-wrap">
         <table>
@@ -117,12 +119,12 @@
             <tr><td>Contrôle créatif</td><td>Conditionnement par catégorie</td><td>Prompt textuel + label, guidance scale</td></tr>
             <tr><td>Cohérence structurelle</td><td>Variable selon la convergence</td><td>Généralement plus cohérente</td></tr>
             <tr><td>Usage recommandé</td><td>Prototypage rapide, exploration</td><td>Rendu final, présentation</td></tr>
-            <tr><td>Statut dans cette démo</td><td>Architecture fournie, poids non inclus — remplacé par le mode « Rapide » procédural</td><td>Point d'intégration fourni, non branché — remplacé par le mode « Détaillé » procédural</td></tr>
+            <tr><td>Statut dans cette démo</td><td>Architecture fournie, poids non inclus — remplacé par le mode « Rapide » procédural</td><td>Point d'intégration fourni, non branché — remplacé par le « Rendu IA » (géométrie procédurale + rendu Gemini)</td></tr>
           </tbody>
         </table>
       </div>
       <div class="mt-24">
-        <a class="btn btn-primary" href="/studio.html">Essayer les modes rapide et détaillé dans l'atelier →</a>
+        <a class="btn btn-primary" href="/studio.html">Essayer le mode rapide et le rendu IA dans l'atelier →</a>
       </div>
     </div>
   </section>

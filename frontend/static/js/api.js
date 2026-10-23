@@ -25,11 +25,12 @@ const ZakhrafaAPI = (() => {
     return res.json();
   }
 
-  async function generate({ category, engine, palette, seed, size }) {
+  // `prompt` (souhait de style) n'est pris en compte qu'en rendu IA
+  async function generate({ category, engine, palette, seed, size, prompt }) {
     const res = await fetch(`${BASE}/api/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category, engine, palette, seed, size }),
+      body: JSON.stringify({ category, engine, palette, seed, size, prompt: prompt || null }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
