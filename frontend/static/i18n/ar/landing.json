@@ -108,5 +108,6 @@
   "gallery.alt.fast_broderie_terracotta": "زخرفة طرز بالنمط السريع: وريدات بغرزة الصليب على خلفية خضراء",
   "artisan.image_alt": "زليج بالعرض بالذكاء الاصطناعي داخل قوس مغربي",
   "about.today_label": "ما يعمل اليوم",
-  "about.planned_label": "ما خطّط له التقرير"
+  "about.planned_label": "ما خطّط له التقرير",
+  "gallery.open": "افتح في الورشة بهذه الإعدادات: {category}، {palette}، {mode}"
 }

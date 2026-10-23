@@ -108,5 +108,6 @@
   "gallery.alt.fast_broderie_terracotta": "Motif Rapide de broderie : rosaces au point de croix sur fond vert",
   "artisan.image_alt": "Rendu IA de zellige encadré par un arc marocain",
   "about.today_label": "Ce qui tourne aujourd'hui",
-  "about.planned_label": "Prévu par le rapport"
+  "about.planned_label": "Prévu par le rapport",
+  "gallery.open": "Ouvrir dans l'atelier avec ces réglages : {category}, {palette}, {mode}"
 }

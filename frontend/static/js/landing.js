@@ -60,6 +60,16 @@ function renderDynamic() {
   document.querySelectorAll(".js-num").forEach((el) => { el.textContent = formatNumber(Number(el.dataset.n)); });
   // liens internes du contenu : ?lang= seulement si le stockage local est indisponible
   document.querySelectorAll("main a[data-href]").forEach((a) => { a.href = withLang(a.dataset.href); });
+  // tuiles de galerie -> atelier avec artisanat, mode et palette présélectionnés
+  items.forEach((it) => {
+    const link = it.querySelector(".g-item__link");
+    if (!link) return;
+    link.setAttribute("aria-label", t("gallery.open", {
+      category: t(`category.${it.dataset.cat}.name`),
+      palette: t(`palette.${it.dataset.palette}`),
+      mode: t(it.dataset.mode === "ai" ? "mode.ai.name" : "mode.fast.name"),
+    }));
+  });
   if (status.textContent) applyFilter(current);
 }
 renderDynamic();

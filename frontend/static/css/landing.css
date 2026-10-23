@@ -256,7 +256,11 @@
   box-shadow: 0 0 0 1px var(--border);
 }
 .g-item__media img { inline-size: 100%; block-size: 100%; object-fit: cover; transition: transform var(--dur-3) var(--ease-out); }
-.g-item:hover .g-item__media img { transform: scale(1.05); }
+.g-item:hover .g-item__media img, .g-item:focus-within .g-item__media img { transform: scale(1.05); }
+/* lien étiré : toute la tuile ouvre l'atelier avec ses réglages */
+.g-item__link { position: absolute; inset: 0; z-index: 2; border-radius: var(--r-md); }
+.g-item__link:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.g-item:has(.g-item__link:hover) .g-item__cap { color: var(--text); }
 .g-item .tile-badge { inset-block-start: 8px; inset-block-end: auto; }
 .g-item__cap { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--sp-2); font-size: var(--fs-sm); color: var(--text-2); line-height: 1.4; }
 .g-item--feature .g-item__cap { font-size: var(--fs-md); }

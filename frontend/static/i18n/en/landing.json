@@ -108,5 +108,6 @@
   "gallery.alt.fast_broderie_terracotta": "Quick-mode embroidery pattern: cross-stitch rosettes on green",
   "artisan.image_alt": "AI render of zellige framed by a Moroccan arch",
   "about.today_label": "What runs today",
-  "about.planned_label": "Planned in the report"
+  "about.planned_label": "Planned in the report",
+  "gallery.open": "Open in the studio with these settings: {category}, {palette}, {mode}"
 }
