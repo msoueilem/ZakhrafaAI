@@ -1,0 +1,23 @@
+{
+  "meta.dashboard.title": "لوحة المتابعة — ZakhrafaAI",
+  "meta.dashboard.description": "إحصائيات الزخارف المولَّدة على ZakhrafaAI حسب الحرفة والنمط، مع آخر الزخارف.",
+  "dashboard.eyebrow": "لوحة المتابعة",
+  "dashboard.title": "نشاط ZakhrafaAI",
+  "dashboard.subtitle": "الزخارف التي ولّدها جميع الزوار منذ آخر إعادة تشغيل للخادم.",
+  "dashboard.note": "إحصائيات عامة محفوظة في الذاكرة، تعود إلى الصفر عند كل إعادة تشغيل.",
+  "dashboard.refresh": "تحديث",
+  "dashboard.updated": "آخر تحديث: {time}",
+  "dashboard.stat.total": "الزخارف المولَّدة",
+  "dashboard.stat.fast": "بالنمط السريع",
+  "dashboard.stat.ai": "بالعرض بالذكاء الاصطناعي",
+  "dashboard.stat.ai_left": "العروض المتبقية اليوم بالذكاء الاصطناعي",
+  "dashboard.by_category": "حسب الحرفة",
+  "dashboard.by_mode": "حسب النمط",
+  "dashboard.bar_aria": "{label}: {n}",
+  "dashboard.latest": "آخر الزخارف",
+  "dashboard.latest_item": "{category} · {mode}",
+  "dashboard.loading": "جارٍ التحميل…",
+  "dashboard.empty": "لم تُولَّد أي زخرفة بعد.",
+  "dashboard.empty_cta": "افتح الورشة",
+  "dashboard.error": "خطأ: {message}"
+}

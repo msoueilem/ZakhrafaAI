@@ -1,0 +1,23 @@
+{
+  "meta.dashboard.title": "Tableau de bord — ZakhrafaAI",
+  "meta.dashboard.description": "Statistiques des motifs générés sur ZakhrafaAI : par artisanat, par mode et derniers motifs.",
+  "dashboard.eyebrow": "Tableau de bord",
+  "dashboard.title": "Activité de ZakhrafaAI",
+  "dashboard.subtitle": "Motifs générés par l'ensemble des visiteurs depuis le dernier redémarrage du serveur.",
+  "dashboard.note": "Statistiques globales gardées en mémoire : elles repartent de zéro à chaque redémarrage.",
+  "dashboard.refresh": "Actualiser",
+  "dashboard.updated": "Mis à jour à {time}",
+  "dashboard.stat.total": "Motifs générés",
+  "dashboard.stat.fast": "En mode Rapide",
+  "dashboard.stat.ai": "En Rendu IA",
+  "dashboard.stat.ai_left": "Rendus IA restants aujourd'hui",
+  "dashboard.by_category": "Par artisanat",
+  "dashboard.by_mode": "Par mode",
+  "dashboard.bar_aria": "{label} : {n}",
+  "dashboard.latest": "Derniers motifs",
+  "dashboard.latest_item": "{category} · {mode}",
+  "dashboard.loading": "Chargement…",
+  "dashboard.empty": "Aucun motif généré pour l'instant.",
+  "dashboard.empty_cta": "Ouvrir l'atelier",
+  "dashboard.error": "Erreur : {message}"
+}
