@@ -12,8 +12,14 @@
 /* ---------- Mise en page ---------- */
 .studio { padding-block-end: var(--sp-16); }
 .studio__layout { display: grid; gap: var(--sp-6); grid-template-columns: minmax(0, 1fr); align-items: start; }
+/* Bureau : la colonne résultat a exactement la largeur de la scène (carrée, bornée par la hauteur
+   d'écran) et la colonne réglages prend le reste ; les deux bords suivent le conteneur de l'en-tête
+   et il n'y a qu'un seul écart (--sp-6) entre elles. */
 @media (min-width: 960px) {
-  .studio__layout { grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); }
+  .studio__layout {
+    --stage-max: max(420px, calc(100dvh - var(--nav-h) - 260px));
+    grid-template-columns: minmax(360px, 1fr) minmax(0, var(--stage-max));
+  }
 }
 @media (max-width: 959.98px) {
   .result { order: -1; }
@@ -81,6 +87,10 @@
 
 /* ---------- Palettes ---------- */
 .palette-grid { display: grid; gap: var(--sp-2); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 960px) {
+  .controls { container-type: inline-size; }
+  @container (min-width: 520px) { .palette-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+}
 @media (min-width: 560px) and (max-width: 959.98px) { .palette-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .palette-skel { block-size: 62px; border-radius: var(--r-sm); }
 .palette-grid__msg { grid-column: 1 / -1; }
@@ -164,9 +174,18 @@
   scroll-margin-block-start: calc(var(--nav-h) + var(--sp-3));
   transition: box-shadow var(--dur-3);
 }
-@media (min-width: 960px) {
-  .stage { max-inline-size: max(420px, min(100%, calc(100dvh - var(--nav-h) - 260px))); }
-  .result__head, .meta, .notices, .result__actions, .about { inline-size: 100%; max-inline-size: max(420px, min(100%, calc(100dvh - var(--nav-h) - 260px))); margin-inline: auto; }
+/* Téléphone, avant la première génération : cadre compact (≈120px) au lieu d'un grand carré vide,
+   pour que l'artisanat reste visible au-dessus de la barre Générer. */
+@media (max-width: 959.98px) {
+  .result.is-empty .stage { aspect-ratio: auto; min-block-size: 120px; }
+  .result.is-empty .stage__empty {
+    grid-auto-flow: column; justify-content: start; align-items: center; justify-items: start;
+    max-inline-size: none; padding: var(--sp-4) var(--sp-5); text-align: start; font-size: var(--fs-sm);
+  }
+  .result.is-empty .stage__empty-icon svg { inline-size: 32px; block-size: 32px; }
+  .result.is-empty .result__actions, .result.is-empty .result__head { display: none; }
+  .studio-head { padding-block: var(--sp-5) var(--sp-4); }
+  .studio-head .eyebrow { display: none; }
 }
 .stage.is-ai { box-shadow: var(--inner-hi), var(--shadow-2), 0 0 0 1px rgb(157 143 255 / 0.25); }
 .stage .lattice--faint { --lattice-opacity: 0.07; }

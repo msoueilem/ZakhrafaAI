@@ -68,6 +68,7 @@ const el = {
   plan: $("assist-submit"),
   planOut: $("assist-out"),
   assistDownOut: $("assist-down"),
+  result: $("result"),
   stage: $("stage"),
   img: $("stage-img"),
   empty: $("stage-empty"),
@@ -524,6 +525,7 @@ function setLoading(request) {
   el.stage.classList.add("is-loading");
   el.stage.classList.toggle("is-ai", request.engine === "diffusion");
   el.stage.setAttribute("aria-busy", "true");
+  el.result.classList.remove("is-empty"); // première génération : la scène reprend son format carré
   el.status.textContent = t(loadingKey(request));
   setBusy(el.generate, true, "studio.generating");
   revealResultArea();
