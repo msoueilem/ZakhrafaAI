@@ -1,0 +1,9 @@
+services:
+  zakhrafaai:
+    build: .
+    image: zakhrafaai:latest
+    container_name: zakhrafaai
+    restart: unless-stopped
+    ports:
+      # exposé uniquement en local : à publier via un reverse proxy
+      - "127.0.0.1:${ZAKHRAFAAI_PORT:-8000}:8000"

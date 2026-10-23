@@ -13,7 +13,8 @@ pip install -q --upgrade pip
 pip install -q -r requirements.txt
 
 echo ""
-echo "ZakhrafaAI démarre sur http://localhost:8000"
+echo "ZakhrafaAI démarre sur http://127.0.0.1:8000"
 echo "Ouvrez cette adresse dans votre navigateur."
 echo ""
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# ajoutez --reload pour le développement
+uvicorn app.main:app --host 127.0.0.1 --port 8000

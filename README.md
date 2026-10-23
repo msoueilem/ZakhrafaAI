@@ -35,7 +35,7 @@ de Python.
 run.bat
 ```
 
-Puis ouvrez **http://localhost:8000** dans votre navigateur.
+Puis ouvrez **http://127.0.0.1:8000** dans votre navigateur.
 
 Le script crée un environnement virtuel, installe les dépendances
 (`backend/requirements.txt`) et démarre le serveur. Aucune connexion
@@ -47,8 +47,16 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate        # .venv\Scripts\activate sous Windows
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app              # ajoutez --reload pour le développement
 ```
+
+### Docker
+```bash
+docker compose up -d --build     # http://127.0.0.1:8000 (ZAKHRAFAAI_PORT pour changer le port)
+```
+L'image (`python:3.12-slim`, utilisateur non root) n'embarque que le
+générateur procédural ; le port n'est publié que sur `127.0.0.1`, à exposer
+via un reverse proxy. Bilan de santé : `GET /api/health`.
 
 ## Pourquoi un générateur procédural par défaut ?
 
@@ -94,6 +102,7 @@ journalisé sur le générateur procédural en cas d'erreur de chargement). Pour
 ```
 zakhrafaai/
 ├── run.sh / run.bat            # scripts de démarrage
+├── Dockerfile / docker-compose.yml
 ├── backend/
 │   ├── requirements.txt        # dépendances (FastAPI, Pillow, numpy...)
 │   ├── requirements-torch.txt  # optionnel : pour de vrais poids GAN/Diffusion

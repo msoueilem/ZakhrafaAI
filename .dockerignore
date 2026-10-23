@@ -1,0 +1,17 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+backend/tests
+backend/pytest.ini
+backend/requirements-dev.txt
+pictures/
+**/*.pth
+run.sh
+run.bat
+.DS_Store
