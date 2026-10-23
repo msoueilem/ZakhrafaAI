@@ -67,6 +67,7 @@ const el = {
   ideaCount: $("assist-count"),
   plan: $("assist-submit"),
   planOut: $("assist-out"),
+  assistDownOut: $("assist-down"),
   stage: $("stage"),
   img: $("stage-img"),
   empty: $("stage-empty"),
@@ -108,6 +109,7 @@ let entrySeq = 0;
 const fieldErrors = { seed: null, size: null, prompt: null };
 const msgs = { plan: null, enhance: null };
 let enhancePrev = null;        // texte avant « Améliorer » (pour Annuler)
+const busy = { plan: false, enhance: false }; // « Proposer » et « Améliorer » s'excluent mutuellement
 let planInfo = null;           // dernier plan appliqué (explication, réglages)
 const captions = new Map();    // "cat|palette|lang" -> texte
 let captionToken = 0;
@@ -190,6 +192,13 @@ function noticeEl({ tone = "info", title, lines = [], action }) {
 function renderMsg(slot, container) {
   const m = msgs[slot];
   container.replaceChildren(m ? noticeEl(m) : "");
+}
+
+/** Message du plan : dans le panneau, ou sous lui s'il a été masqué (assistant coupé en cours de session). */
+function renderPlanMsg() {
+  const down = assistDown && msgs.plan;
+  renderMsg("plan", down ? el.assistDownOut : el.planOut);
+  (down ? el.planOut : el.assistDownOut).replaceChildren();
 }
 
 function flash(node) {
@@ -717,14 +726,21 @@ function renderHistory() {
 /* ------------------------------------------------------------------ */
 /* Assistant (DeepSeek)                                                */
 /* ------------------------------------------------------------------ */
+/** Assistant visible seulement s'il est actif ET n'a pas répondu assist_disabled pendant la session. */
 function renderAssistAvailability() {
-  const on = assistOn();
+  const on = assistOn() && !assistDown;
   el.assist.hidden = !on;
   el.enhance.hidden = !on;
   if (!on) el.enhanceUndo.hidden = true;
-  el.plan.disabled = assistDown;
-  el.enhance.disabled = assistDown;
-  if (current) el.about.hidden = !(on && !assistDown);
+  if (!on) { el.about.hidden = true; el.about.open = false; }
+  else if (current) el.about.hidden = false;
+  syncAssistButtons();
+}
+
+/** Un seul appel d'assistant modifiant les réglages à la fois. */
+function syncAssistButtons() {
+  el.plan.disabled = assistDown || busy.plan || busy.enhance;
+  el.enhance.disabled = assistDown || busy.plan || busy.enhance;
 }
 
 function assistErrorDesc(r) {
@@ -742,10 +758,12 @@ function assistErrorDesc(r) {
 function noteAssistFailure(r) {
   if (r.code === "assist_disabled") {
     assistDown = true;
-    el.plan.disabled = true;
-    el.enhance.disabled = true;
+    renderAssistAvailability(); // masque tout de suite le panneau, « Améliorer » et « À propos »
   }
 }
+
+/** Réponse arrivée après un changement de langue : on l'écarte (texte dans l'ancienne langue). */
+const langChangedMsg = () => ({ tone: "info", lines: [{ key: "studio.assist.lang_changed" }] });
 
 /* (a) idée -> réglages */
 el.plan.addEventListener("click", runPlan);
@@ -760,20 +778,25 @@ async function runPlan() {
     return;
   }
   msgs.plan = null;
-  renderMsg("plan", el.planOut);
+  renderPlanMsg();
+  const lang = getLang();
+  busy.plan = true;
   setBusy(el.plan, true, "studio.assist.submitting");
+  syncAssistButtons();
   el.idea.setAttribute("aria-busy", "true");
-  const r = await postJSON("/api/assist/plan", { idea: idea.slice(0, IDEA_MAX), lang: getLang() }, { timeout: 45000 });
+  const r = await postJSON("/api/assist/plan", { idea: idea.slice(0, IDEA_MAX), lang }, { timeout: 45000 });
+  busy.plan = false;
   setBusy(el.plan, false, "studio.assist.submit");
+  syncAssistButtons();
   el.idea.removeAttribute("aria-busy");
   if (r.code === "aborted") return;
   if (!r.ok || !r.data || typeof r.data !== "object") {
     noteAssistFailure(r);
     msgs.plan = { tone: "danger", lines: [assistErrorDesc(r)] };
-    renderMsg("plan", el.planOut);
-    if (assistDown) el.plan.disabled = true;
+    renderPlanMsg();
     return;
   }
+  if (getLang() !== lang) { msgs.plan = langChangedMsg(); renderPlanMsg(); return; }
   applyPlan(r.data);
 }
 
@@ -808,7 +831,7 @@ function applyPlan(d) {
     explanation: typeof d.explanation === "string" ? d.explanation.slice(0, 240) : "",
   };
   msgs.plan = planNotice();
-  renderMsg("plan", el.planOut);
+  renderPlanMsg();
   // mise en valeur visible de ce qui a changé (tout, si rien n'a changé)
   (changed.length ? changed : ["group-craft", "group-mode", "group-palette"]).forEach((id) => flash($(id)));
 }
@@ -838,19 +861,27 @@ el.enhance.addEventListener("click", async () => {
   }
   msgs.enhance = null;
   renderMsg("enhance", el.enhanceOut);
+  const before = el.prompt.value;
+  const lang = getLang();
+  busy.enhance = true;
   setBusy(el.enhance, true, "studio.assist.enhancing");
+  syncAssistButtons();
   el.prompt.readOnly = true;
-  const r = await postJSON("/api/assist/enhance", { prompt: text, category: state.category, lang: getLang() }, { timeout: 45000 });
+  const r = await postJSON("/api/assist/enhance", { prompt: text, category: state.category, lang }, { timeout: 45000 });
+  busy.enhance = false;
   setBusy(el.enhance, false, "studio.assist.enhance");
+  syncAssistButtons();
   el.prompt.readOnly = false;
   if (r.code === "aborted") return;
   if (!r.ok || typeof r.data?.prompt !== "string" || !r.data.prompt.trim()) {
     noteAssistFailure(r);
     msgs.enhance = { tone: "danger", lines: [assistErrorDesc(r)] };
     renderMsg("enhance", el.enhanceOut);
-    if (assistDown) el.enhance.disabled = true;
     return;
   }
+  // le texte a changé entre-temps (plan appliqué, saisie…) : ne pas l'écraser
+  if (el.prompt.value !== before) return;
+  if (getLang() !== lang) { msgs.enhance = langChangedMsg(); renderMsg("enhance", el.enhanceOut); return; }
   enhancePrev = el.prompt.value;
   el.prompt.value = r.data.prompt.trim().slice(0, PROMPT_MAX);
   updatePromptCount();
@@ -940,7 +971,7 @@ onLangChange(() => {
   if (failure) el.errorText.textContent = tx(failure);
   renderHistory();
   if (planInfo && msgs.plan && msgs.plan.tone === "ai") msgs.plan = planNotice();
-  renderMsg("plan", el.planOut);
+  renderPlanMsg();
   renderMsg("enhance", el.enhanceOut);
   if (el.about.open && current) loadCaption();
   else el.aboutBody.replaceChildren();

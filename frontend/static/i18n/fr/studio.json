@@ -97,5 +97,6 @@
   "studio.about.loading": "Rédaction de la note…",
   "studio.about.retry": "Réessayer",
   "studio.about.note": "Note rédigée par l'assistant IA, à titre indicatif.",
-  "studio.assist.error.assist_ip_limit_wait": "Trop de demandes depuis votre connexion. Réessayez dans {wait}."
+  "studio.assist.error.assist_ip_limit_wait": "Trop de demandes depuis votre connexion. Réessayez dans {wait}.",
+  "studio.assist.lang_changed": "Langue changée pendant la demande : relancez-la."
 }

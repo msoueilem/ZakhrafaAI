@@ -69,7 +69,7 @@
 .assist__input { min-block-size: 72px; }
 .assist__row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; }
 .assist__row .btn { margin-inline-start: auto; }
-#assist-out:empty, #enhance-out:empty { display: none; }
+#assist-out:empty, #enhance-out:empty, #assist-down:empty { display: none; }
 
 /* ---------- Mode ---------- */
 .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

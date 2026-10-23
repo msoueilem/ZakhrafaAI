@@ -97,5 +97,6 @@
   "studio.about.loading": "Writing the note…",
   "studio.about.retry": "Try again",
   "studio.about.note": "Note written by the AI assistant, for guidance only.",
-  "studio.assist.error.assist_ip_limit_wait": "Too many requests from your connection. Try again in {wait}."
+  "studio.assist.error.assist_ip_limit_wait": "Too many requests from your connection. Try again in {wait}.",
+  "studio.assist.lang_changed": "The language changed during the request: please run it again."
 }
