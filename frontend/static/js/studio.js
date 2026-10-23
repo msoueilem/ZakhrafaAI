@@ -333,12 +333,19 @@
   els.regenBtn.addEventListener("click", () => {
     if (last) doGenerate({ ...last.request });
   });
+  // nom de fichier honnête : « rapide », « ia » si Gemini a rendu l'image,
+  // « procedural » si une demande de rendu IA est retombée sur le procédural
+  function fileModeLabel(result) {
+    if (result.engine === "gan") return "rapide";
+    return result.source === "gemini" ? "ia" : "procedural";
+  }
+
   els.downloadBtn.addEventListener("click", () => {
     if (!last) return;
-    const { category, engine, seed } = last.request;
+    const { category, seed } = last.request;
     const a = document.createElement("a");
     a.href = last.result.image;
-    a.download = `zakhrafaai_${category}_${engine}_${seed}.png`;
+    a.download = `zakhrafaai_${category}_${fileModeLabel(last.result)}_${seed}.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();
