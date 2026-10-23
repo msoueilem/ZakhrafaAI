@@ -1,162 +1,380 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ZakhrafaAI — Génération de motifs artisanaux marocains</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 rx=%276%27 fill=%27%230B2436%27/%3E%3Cpolygon points=%2720,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14%27 fill=%27none%27 stroke=%27%23C9A227%27 stroke-width=%272.5%27/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="/assets/css/styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="meta.index.title">ZakhrafaAI — Motifs marocains : zellige, tapis, broderie</title>
+<meta name="description" content="Générez gratuitement des motifs inspirés du zellige, des tapis berbères et de la broderie marocaine, puis visualisez-les en rendu IA réaliste. Un outil d'exploration pour artisans et designers." data-i18n-attr="content:meta.index.description">
+<meta name="theme-color" content="#070B12">
+<meta property="og:title" content="ZakhrafaAI — Motifs marocains : zellige, tapis, broderie">
+<meta property="og:image" content="/assets/img/gallery/ai-zellige-fes.webp">
+<script src="/assets/js/boot.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/landing.css">
+<link rel="icon" href="/assets/img/ornament.svg" type="image/svg+xml">
+<link rel="preload" as="image" href="/assets/img/gallery/thumb-ai-broderie-emeraude.webp" type="image/webp">
 </head>
-<body>
+<body data-page="landing">
+<header id="site-header"></header>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="/">
-      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
-                 fill="none" stroke="#C9A227" stroke-width="2"/>
-      </svg>
-      ZakhrafaAI
-    </a>
-    <div class="nav-links" id="navMenu">
-      <a href="/" class="active">Accueil</a>
-      <a href="/studio">Générer</a>
-      <a href="/dashboard">Tableau de bord</a>
-      <a href="#produit">Produit</a>
-      <a href="#comparatif">Architecture</a>
-    </div>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Ouvrir le menu">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <a class="nav-cta" href="/studio">Ouvrir l'atelier</a>
-  </div>
-</nav>
+<main id="main" tabindex="-1">
 
-<header class="hero">
-  <div class="container hero-grid">
-    <div>
-      <div class="eyebrow">AIDS — Master IA &amp; Data Sciences · FST Tanger</div>
-      <h1>L'IA au service du <span>zellige</span>, des <span>tapis</span> &amp; de la <span>broderie</span></h1>
-      <p style="font-size:1.05rem; max-width:520px;">
-        ZakhrafaAI génère des motifs inspirés de l'artisanat marocain avec un
-        générateur procédural qui encode leurs codes visuels (symétrie, répétition,
-        palettes), puis, en mode « Rendu IA », les fait re-rendre par un modèle
-        d'image Google Gemini comme de vrais carreaux, tapis ou broderies.
-        L'architecture prévue par le rapport — un GAN rapide et un modèle
-        de diffusion entraînés — est intégrée au code et peut être branchée.
-        Sans jamais remplacer le maâlem : un outil d'exploration et de création assistée.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="/studio">Générer un motif →</a>
-        <a class="btn btn-outline" href="#comparatif">Architecture prévue : GAN / Diffusion</a>
+  <!-- 1. Hero -->
+  <section class="hero lattice-host under-nav" aria-labelledby="hero-title">
+    <div class="lattice" aria-hidden="true"></div>
+    <div class="hero__halo" aria-hidden="true"></div>
+    <div class="container hero__inner">
+      <span class="eyebrow eyebrow--chip enter" data-i18n="hero.eyebrow">Zellige · Tapis · Broderie</span>
+      <h1 class="hero__heading enter" style="--i:1" id="hero-title">
+        <span class="hero__wordmark text-grad" dir="ltr">ZakhrafaAI</span>
+        <span class="hero__title" data-i18n="hero.title">Créez des motifs de zellige, tapis et broderie</span>
+      </h1>
+      <p class="lead hero__lead enter" style="--i:2" data-i18n="hero.subtitle">Un générateur géométrique instantané et gratuit, puis un rendu IA qui transforme le motif en photo réaliste de la matière. Un outil d'exploration pour artisans et designers.</p>
+      <div class="hero__ctas enter" style="--i:3">
+        <a class="btn btn--primary btn--lg" href="/studio" data-href="/studio"><span data-i18n="hero.cta_primary">Essayer gratuitement</span><span class="js-icon" data-icon="arrow-end"></span></a>
+        <a class="btn btn--ghost btn--lg" href="#how" data-i18n="hero.cta_secondary">Voir comment ça marche</a>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat"><b>3</b><span>catégories : zellige, tapis, broderie</span></div>
-        <div class="hero-stat"><b>2</b><span>modes : rapide (procédural) / rendu IA</span></div>
-        <div class="hero-stat"><b>768²</b><span>résolution du rendu IA</span></div>
-      </div>
-    </div>
-    <div class="hero-visual">
-      <img src="/assets/img/hero_zellige.png" alt="Motif de zellige généré par ZakhrafaAI" />
-    </div>
-  </div>
-  <svg class="zellige-divider" viewBox="0 0 800 26" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <pattern id="stripStar" width="40" height="26" patternUnits="userSpaceOnUse">
-        <rect width="40" height="26" fill="none"/>
-        <polygon points="20,3 23,11 31,11 25,16 27,24 20,19 13,24 15,16 9,11 17,11"
-                 fill="none" stroke="#C9A227" stroke-width="1"/>
-      </pattern>
-    </defs>
-    <rect width="800" height="26" fill="url(#stripStar)"/>
-  </svg>
-</header>
+      <p class="text-sm subtle enter" style="--i:4" data-i18n="hero.note">Sans inscription · Mode Rapide illimité</p>
 
-<main>
-  <section class="section" id="produit" style="padding-top:20px;">
+      <ul class="hero-strip list-reset enter" style="--i:5" role="list" aria-label="Motifs réellement générés par ZakhrafaAI" data-i18n-attr="aria-label:hero.strip_aria">
+        <li class="hero-tile" style="--k:-2">
+          <img src="/assets/img/gallery/thumb-ai-zellige-fes.webp" width="320" height="320" alt="Rendu IA de zellige : étoiles blanches et bleu canard, rosaces bleues et losanges ocre en carreaux émaillés" data-i18n-attr="alt:gallery.alt.ai_zellige_fes">
+          <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+        </li>
+        <li class="hero-tile" style="--k:-1">
+          <img src="/assets/img/gallery/thumb-fast-tapis-berbere.webp" width="320" height="320" alt="Motif Rapide de tapis berbère : bandes de losanges ocre et bruns sur fond rouge" data-i18n-attr="alt:gallery.alt.fast_tapis_berbere">
+          <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+        </li>
+        <li class="hero-tile hero-tile--arch" style="--k:0">
+          <img src="/assets/img/gallery/thumb-ai-broderie-emeraude.webp" width="320" height="320" fetchpriority="high" alt="Rendu IA de broderie : motifs au point de croix vert émeraude et or sur toile de lin" data-i18n-attr="alt:gallery.alt.ai_broderie_emeraude">
+          <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+        </li>
+        <li class="hero-tile" style="--k:1">
+          <img src="/assets/img/gallery/thumb-fast-zellige-classique.webp" width="320" height="320" alt="Motif Rapide de zellige : étoiles blanches, jaunes et turquoise sur fond grenat" data-i18n-attr="alt:gallery.alt.fast_zellige_classique">
+          <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+        </li>
+        <li class="hero-tile" style="--k:2">
+          <img src="/assets/img/gallery/thumb-ai-tapis-berbere.webp" width="320" height="320" alt="Rendu IA de tapis berbère : laine rouge garance, rangées de losanges ocre et bleus, bordures dorées" data-i18n-attr="alt:gallery.alt.ai_tapis_berbere">
+          <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+        </li>
+      </ul>
+
+      <dl class="hero-stats enter" style="--i:6">
+        <div><dt data-i18n="hero.stat.crafts">artisanats</dt><dd class="js-num" data-n="3">3</dd></div>
+        <div><dt data-i18n="hero.stat.modes">modes de création</dt><dd class="js-num" data-n="2">2</dd></div>
+        <div><dt data-i18n="hero.stat.languages">langues</dt><dd class="js-num" data-n="3">3</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 2. Fonctionnement -->
+  <section class="section" id="how" aria-labelledby="how-title">
     <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Notre produit</div>
-        <h2>Trois traditions, un même moteur de création assistée</h2>
-        <p>Chaque catégorie possède ses propres codes géométriques et son propre niveau de complexité — le générateur les encode explicitement plutôt que de les ignorer.</p>
-      </div>
-      <div class="card-grid">
-        <div class="card">
-          <img class="card-swatch" src="/assets/img/sample_zellige.png" alt="Exemple de motif zellige" style="object-fit:cover;"/>
-          <span class="tag">Complexité : haute</span>
-          <h3>Zellige</h3>
-          <p>Mosaïques géométriques colorées, entrelacs d'étoiles à 8, 10 ou 12 branches, symétrie stricte héritée des ateliers de Fès.</p>
-        </div>
-        <div class="card">
-          <img class="card-swatch" src="/assets/img/sample_tapis.png" alt="Exemple de motif de tapis" style="object-fit:cover;"/>
-          <span class="tag">Complexité : moyenne à élevée</span>
-          <h3>Tapis</h3>
-          <p>Motifs berbères et arabesques, compositions régionales, losanges et codes tribaux organisés en bandes.</p>
-        </div>
-        <div class="card">
-          <img class="card-swatch" src="/assets/img/sample_broderie.png" alt="Exemple de motif de broderie" style="object-fit:cover;"/>
-          <span class="tag">Complexité : moyenne</span>
-          <h3>Broderie</h3>
-          <p>Ornements floraux et géométriques, tiges et feuillages reliant des rosaces brodées à la main.</p>
-        </div>
+      <header class="section-head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="how.eyebrow">Fonctionnement</span>
+        <h2 class="h2" id="how-title" data-i18n="how.title">Un motif en trois étapes</h2>
+      </header>
+      <ol class="steps list-reset" role="list">
+        <li class="step reveal" style="--i:0">
+          <span class="step__star" aria-hidden="true"><span>1</span></span>
+          <span class="sr-only" data-i18n="how.step_label" data-i18n-params='{"n":1}'>Étape 1</span>
+          <h3 class="step__title" data-i18n="how.step1.title">Choisissez l'artisanat</h3>
+          <p class="step__text" data-i18n="how.step1.text">Zellige, tapis ou broderie, puis une palette inspirée des couleurs traditionnelles.</p>
+        </li>
+        <li class="step reveal" style="--i:1">
+          <span class="step__star" aria-hidden="true"><span>2</span></span>
+          <span class="sr-only" data-i18n="how.step_label" data-i18n-params='{"n":2}'>Étape 2</span>
+          <h3 class="step__title" data-i18n="how.step2.title">Générez la géométrie</h3>
+          <p class="step__text" data-i18n="how.step2.text">Le générateur compose instantanément un motif qui respecte symétries, répétitions et codes de chaque tradition.</p>
+        </li>
+        <li class="step step--ai reveal" style="--i:2">
+          <span class="step__star" aria-hidden="true"><span>3</span></span>
+          <span class="sr-only" data-i18n="how.step_label" data-i18n-params='{"n":3}'>Étape 3</span>
+          <h3 class="step__title" data-i18n="how.step3.title">Passez au Rendu IA</h3>
+          <p class="step__text" data-i18n="how.step3.text">En option, l'IA transforme la géométrie en photo réaliste de carreaux émaillés, de laine tissée ou de fil brodé.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3. Les trois artisanats -->
+  <section class="section section--band lattice-host" id="crafts" aria-labelledby="crafts-title">
+    <div class="lattice lattice--subtle" aria-hidden="true"></div>
+    <div class="container">
+      <header class="section-head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="crafts.eyebrow">Trois artisanats</span>
+        <h2 class="h2" id="crafts-title" data-i18n="crafts.title">Trois traditions, chacune avec ses codes</h2>
+        <p class="lead" data-i18n="crafts.subtitle">Le générateur encode la géométrie propre à chaque savoir-faire plutôt que de produire des formes génériques.</p>
+      </header>
+      <div class="grid grid--3 crafts">
+        <article class="card card--interactive craft reveal" style="--i:0">
+          <div class="card__media craft__media">
+            <img src="/assets/img/gallery/ai-zellige-fes.webp" width="504" height="504" loading="lazy" decoding="async" alt="Exemple de motif de zellige" data-i18n-attr="alt:category.zellige.image_alt">
+          </div>
+          <h3 class="card__title"><a class="stretched craft__link" href="/studio?category=zellige" data-href="/studio?category=zellige"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span></a></h3>
+          <p class="card__text" data-i18n="category.zellige.desc">Mosaïque de carreaux émaillés : étoiles à 8, 10 ou 12 branches et symétrie stricte, héritées des ateliers de Fès.</p>
+          <div class="card__footer craft__footer">
+            <span class="meter" data-level="3" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="text-sm muted js-level" data-level-key="complexity.high">Complexité : haute</span>
+            <span class="craft__go" aria-hidden="true"><span class="js-icon" data-icon="arrow-end"></span></span>
+          </div>
+        </article>
+        <article class="card card--interactive craft reveal" style="--i:1">
+          <div class="card__media craft__media">
+            <img src="/assets/img/gallery/ai-tapis-berbere.webp" width="504" height="504" loading="lazy" decoding="async" alt="Exemple de motif de tapis berbère" data-i18n-attr="alt:category.tapis.image_alt">
+          </div>
+          <h3 class="card__title"><a class="stretched craft__link" href="/studio?category=tapis" data-href="/studio?category=tapis"><span class="dot dot--tapis"></span><span data-i18n="category.tapis.name">Tapis</span></a></h3>
+          <p class="card__text" data-i18n="category.tapis.desc">Tapis berbères : losanges, bandes et symboles tribaux organisés selon des compositions régionales.</p>
+          <div class="card__footer craft__footer">
+            <span class="meter" data-level="2" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="text-sm muted js-level" data-level-key="complexity.medium_high">Complexité : moyenne à élevée</span>
+            <span class="craft__go" aria-hidden="true"><span class="js-icon" data-icon="arrow-end"></span></span>
+          </div>
+        </article>
+        <article class="card card--interactive craft reveal" style="--i:2">
+          <div class="card__media craft__media">
+            <img src="/assets/img/gallery/ai-broderie-emeraude.webp" width="504" height="504" loading="lazy" decoding="async" alt="Exemple de motif de broderie" data-i18n-attr="alt:category.broderie.image_alt">
+          </div>
+          <h3 class="card__title"><a class="stretched craft__link" href="/studio?category=broderie" data-href="/studio?category=broderie"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span></a></h3>
+          <p class="card__text" data-i18n="category.broderie.desc">Ornements floraux et géométriques : rosaces reliées par des tiges et des feuillages, comme brodées à la main.</p>
+          <div class="card__footer craft__footer">
+            <span class="meter" data-level="1" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="text-sm muted js-level" data-level-key="complexity.medium">Complexité : moyenne</span>
+            <span class="craft__go" aria-hidden="true"><span class="js-icon" data-icon="arrow-end"></span></span>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="section" id="comparatif">
+  <!-- 4. Rapide vs Rendu IA -->
+  <section class="section" id="modes" aria-labelledby="modes-title">
     <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Architecture prévue · rapport</div>
-        <h2>GAN vs modèle de diffusion</h2>
-        <p>Synthèse du rapport (§8) comparant deux familles de modèles en qualité visuelle, contrôle créatif, stabilité d'apprentissage et temps d'inférence.</p>
-        <p>Ces modèles entraînés ne tournent pas dans cette démo. L'atelier propose un mode rapide procédural (256 px) et un rendu IA hybride : géométrie procédurale (768 px) re-rendue par un modèle d'image Google Gemini. Le code d'intégration (<code>backend/app/models/</code>) permet de brancher des poids entraînés.</p>
+      <header class="section-head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="modes.eyebrow">Deux modes</span>
+        <h2 class="h2" id="modes-title" data-i18n="modes.title">Rapide ou Rendu IA : à vous de choisir</h2>
+        <p class="lead" data-i18n="modes.subtitle">Explorez librement en mode Rapide, puis visualisez vos meilleures idées sur une matière réelle avec le Rendu IA.</p>
+      </header>
+      <div class="modes">
+        <article class="mode-card reveal" style="--i:0" aria-labelledby="mode-fast-title">
+          <div class="mode-card__media">
+            <img src="/assets/img/gallery/fast-zellige-fes.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif de zellige en mode Rapide : étoiles géométriques en aplats bleu de Fès, ivoire et or" data-i18n-attr="alt:modes.example_fast_alt">
+          </div>
+          <div class="mode-card__head">
+            <span class="mode-card__icon"><span class="js-icon" data-icon="bolt" data-size="20"></span></span>
+            <div>
+              <h3 class="mode-card__title" id="mode-fast-title" data-i18n="mode.fast.name">Rapide</h3>
+              <p class="mode-card__tagline" data-i18n="mode.fast.tagline">Générateur géométrique procédural</p>
+            </div>
+          </div>
+          <dl class="mode-card__rows">
+            <div><dt data-i18n="modes.row.speed">Vitesse</dt><dd data-i18n="mode.fast.speed">Instantané</dd></div>
+            <div><dt data-i18n="modes.row.cost">Coût</dt><dd data-i18n="mode.fast.cost">Gratuit et illimité</dd></div>
+            <div><dt data-i18n="modes.row.realism">Réalisme</dt><dd data-i18n="mode.fast.realism">Motif graphique stylisé</dd></div>
+            <div><dt data-i18n="modes.row.resolution">Résolution</dt><dd data-i18n="mode.fast.resolution">256 px par défaut (128 à 1024)</dd></div>
+            <div><dt data-i18n="modes.row.best_for">Idéal pour</dt><dd data-i18n="mode.fast.best_for">Explorer formes et palettes</dd></div>
+          </dl>
+        </article>
+        <article class="mode-card mode-card--ai reveal" style="--i:1" aria-labelledby="mode-ai-title">
+          <div class="mode-card__media">
+            <img src="/assets/img/gallery/ai-zellige-fes.webp" width="504" height="504" loading="lazy" decoding="async" alt="Le même type de motif en Rendu IA : photo réaliste de carreaux de zellige émaillés bleu canard, ivoire et ocre" data-i18n-attr="alt:modes.example_ai_alt">
+          </div>
+          <div class="mode-card__head">
+            <span class="mode-card__icon"><span class="js-icon" data-icon="sparkle" data-size="20"></span></span>
+            <div>
+              <h3 class="mode-card__title" id="mode-ai-title" data-i18n="mode.ai.name">Rendu IA</h3>
+              <p class="mode-card__tagline" data-i18n="mode.ai.tagline">Géométrie re-rendue par Google Gemini</p>
+            </div>
+          </div>
+          <dl class="mode-card__rows">
+            <div><dt data-i18n="modes.row.speed">Vitesse</dt><dd data-i18n="mode.ai.speed">Environ 10 à 30 s</dd></div>
+            <div><dt data-i18n="modes.row.cost">Coût</dt><dd data-i18n="mode.ai.cost">Gratuit, quota quotidien limité</dd></div>
+            <div><dt data-i18n="modes.row.realism">Réalisme</dt><dd data-i18n="mode.ai.realism">Rendu photoréaliste de la matière</dd></div>
+            <div><dt data-i18n="modes.row.resolution">Résolution</dt><dd data-i18n="mode.ai.resolution">768 px par défaut</dd></div>
+            <div><dt data-i18n="modes.row.best_for">Idéal pour</dt><dd data-i18n="mode.ai.best_for">Voir un motif comme un objet réel</dd></div>
+          </dl>
+        </article>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Critère</th><th>GAN convolutionnel (prévu)</th><th>Diffusion — Stable Diffusion + LoRA (prévu)</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Résolution par défaut</td><td>256 × 256</td><td>768 × 768</td></tr>
-            <tr><td>Vitesse de génération</td><td>Très rapide</td><td>Plus lente, qualité supérieure</td></tr>
-            <tr><td>Contrôle créatif</td><td>Conditionnement par catégorie</td><td>Prompt textuel + label, guidance scale</td></tr>
-            <tr><td>Cohérence structurelle</td><td>Variable selon la convergence</td><td>Généralement plus cohérente</td></tr>
-            <tr><td>Usage recommandé</td><td>Prototypage rapide, exploration</td><td>Rendu final, présentation</td></tr>
-            <tr><td>Statut dans cette démo</td><td>Architecture fournie, poids non inclus — remplacé par le mode « Rapide » procédural</td><td>Point d'intégration fourni, non branché — remplacé par le « Rendu IA » (géométrie procédurale + rendu Gemini)</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="mt-24">
-        <a class="btn btn-primary" href="/studio">Essayer le mode rapide et le rendu IA dans l'atelier →</a>
+      <div class="section-cta reveal">
+        <a class="btn btn--secondary" href="/studio" data-href="/studio"><span data-i18n="modes.cta">Comparer dans l'atelier</span><span class="js-icon" data-icon="arrow-end"></span></a>
       </div>
     </div>
   </section>
 
-  <section class="section">
+  <!-- 5. Galerie -->
+  <section class="section section--band" id="gallery" aria-labelledby="gallery-title">
     <div class="container">
-      <div class="section-head">
-        <div class="eyebrow">Collaboration homme-machine</div>
-        <h2>Un outil d'exploration, pas un substitut à l'artisan</h2>
-        <p style="max-width:760px;">
-          L'objectif n'est pas de remplacer l'artisan mais de lui fournir un outil d'aide
-          à la création, favorisant l'exploration de nouvelles combinaisons de formes, de
-          couleurs et de structures géométriques, dans le respect des codes culturels
-          existants. L'artisan reste au centre de la validation finale.
-        </p>
+      <header class="section-head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="gallery.eyebrow">Exemples</span>
+        <h2 class="h2" id="gallery-title" data-i18n="gallery.title">Quelques motifs générés</h2>
+        <p class="lead" data-i18n="gallery.subtitle">Toutes les images proviennent de ZakhrafaAI. Le badge indique le mode utilisé.</p>
+      </header>
+
+      <div class="gallery-filters reveal" role="group" aria-label="Filtrer les exemples par artisanat" data-i18n-attr="aria-label:gallery.filter_aria" hidden>
+        <button type="button" class="chip" aria-pressed="true" data-filter="all" data-i18n="gallery.filter.all">Tous</button>
+        <button type="button" class="chip" aria-pressed="false" data-filter="zellige"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span></button>
+        <button type="button" class="chip" aria-pressed="false" data-filter="tapis"><span class="dot dot--tapis"></span><span data-i18n="category.tapis.name">Tapis</span></button>
+        <button type="button" class="chip" aria-pressed="false" data-filter="broderie"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span></button>
+      </div>
+      <p class="sr-only" id="gallery-status" aria-live="polite"></p>
+
+      <ul class="gallery list-reset" role="list">
+        <li class="g-item g-item--feature reveal" data-cat="zellige" data-mode="ai">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/ai-zellige-nuit.webp" width="720" height="720" loading="lazy" decoding="async" alt="Rendu IA de zellige : étoiles à huit branches bleu ciel et ivoire, losanges ocre, sur fond émaillé bleu nuit" data-i18n-attr="alt:gallery.alt.ai_zellige_nuit"></div>
+            <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="tapis" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-tapis-berbere.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de tapis berbère : bandes de losanges ocre et bruns sur fond rouge" data-i18n-attr="alt:gallery.alt.fast_tapis_berbere"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--tapis"></span><span data-i18n="category.tapis.name">Tapis</span><span aria-hidden="true">·</span><span data-i18n="palette.berbere">Berbère</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="broderie" data-mode="ai">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/ai-broderie-emeraude.webp" width="504" height="504" loading="lazy" decoding="async" alt="Rendu IA de broderie : motifs au point de croix vert émeraude et or sur toile de lin" data-i18n-attr="alt:gallery.alt.ai_broderie_emeraude"></div>
+            <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span><span aria-hidden="true">·</span><span data-i18n="palette.emeraude">Émeraude</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="zellige" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-zellige-fes.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de zellige : étoiles ivoire et or sur fond bleu de Fès" data-i18n-attr="alt:gallery.alt.fast_zellige_fes"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span><span aria-hidden="true">·</span><span data-i18n="palette.fes_bleu">Bleu de Fès</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="tapis" data-mode="ai">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/ai-tapis-berbere.webp" width="504" height="504" loading="lazy" decoding="async" alt="Rendu IA de tapis berbère : laine rouge garance, rangées de losanges ocre et bleus, bordures dorées" data-i18n-attr="alt:gallery.alt.ai_tapis_berbere"></div>
+            <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--tapis"></span><span data-i18n="category.tapis.name">Tapis</span><span aria-hidden="true">·</span><span data-i18n="palette.berbere">Berbère</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="broderie" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-broderie-rosaces.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de broderie : rosaces ajourées blanches reliées par des tiges bleues sur fond grenat" data-i18n-attr="alt:gallery.alt.fast_broderie_rosaces"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span><span aria-hidden="true">·</span><span data-i18n="palette.zellige_classique">Zellige classique</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="zellige" data-mode="ai">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/ai-zellige-classique.webp" width="720" height="720" loading="lazy" decoding="async" alt="Rendu IA de zellige : étoiles à dix branches turquoise et bleu canard, losanges jaunes, fond grenat" data-i18n-attr="alt:gallery.alt.ai_zellige_classique"></div>
+            <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span><span aria-hidden="true">·</span><span data-i18n="palette.zellige_classique">Zellige classique</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="tapis" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-tapis-fes.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de tapis : bandes de losanges bleus, ivoire et or sur fond bleu nuit" data-i18n-attr="alt:gallery.alt.fast_tapis_fes"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--tapis"></span><span data-i18n="category.tapis.name">Tapis</span><span aria-hidden="true">·</span><span data-i18n="palette.fes_bleu">Bleu de Fès</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="broderie" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-broderie-emeraude.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de broderie : fleurs en amande ivoire et or sur fond bleu nuit" data-i18n-attr="alt:gallery.alt.fast_broderie_emeraude"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span><span aria-hidden="true">·</span><span data-i18n="palette.emeraude">Émeraude</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="zellige" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-zellige-classique.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de zellige : étoiles blanches, jaunes et turquoise sur fond grenat" data-i18n-attr="alt:gallery.alt.fast_zellige_classique"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span><span aria-hidden="true">·</span><span data-i18n="palette.zellige_classique">Zellige classique</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="zellige" data-mode="ai">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/ai-zellige-fes.webp" width="504" height="504" loading="lazy" decoding="async" alt="Rendu IA de zellige : étoiles blanches et bleu canard, rosaces bleues et losanges ocre en carreaux émaillés" data-i18n-attr="alt:gallery.alt.ai_zellige_fes"></div>
+            <span class="tile-badge tile-badge--ai"><span class="js-icon" data-icon="sparkle" data-size="12"></span><span data-i18n="mode.ai.name">Rendu IA</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--zellige"></span><span data-i18n="category.zellige.name">Zellige</span><span aria-hidden="true">·</span><span data-i18n="palette.fes_bleu">Bleu de Fès</span></figcaption>
+          </figure>
+        </li>
+        <li class="g-item reveal" data-cat="broderie" data-mode="fast">
+          <figure>
+            <div class="g-item__media"><img src="/assets/img/gallery/fast-broderie-terracotta.webp" width="720" height="720" loading="lazy" decoding="async" alt="Motif Rapide de broderie : rosaces au point de croix sur fond vert" data-i18n-attr="alt:gallery.alt.fast_broderie_terracotta"></div>
+            <span class="tile-badge"><span class="js-icon" data-icon="bolt" data-size="12"></span><span data-i18n="mode.fast.name">Rapide</span></span>
+            <figcaption class="g-item__cap"><span class="dot dot--broderie"></span><span data-i18n="category.broderie.name">Broderie</span><span aria-hidden="true">·</span><span data-i18n="palette.terracotta">Terracotta</span></figcaption>
+          </figure>
+        </li>
+      </ul>
+      <p class="gallery-empty muted text-center" hidden data-i18n="gallery.empty">Les exemples arrivent bientôt.</p>
+
+      <div class="section-cta reveal">
+        <a class="btn btn--primary" href="/studio" data-href="/studio"><span data-i18n="gallery.cta">Créer le vôtre</span><span class="js-icon" data-icon="arrow-end"></span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Avec les artisans -->
+  <section class="section lattice-host artisan" aria-labelledby="artisan-title">
+    <div class="lattice lattice--subtle" aria-hidden="true"></div>
+    <div class="container artisan__grid">
+      <figure class="artisan__arch reveal">
+        <img src="/assets/img/gallery/ai-zellige-classique.webp" width="720" height="720" loading="lazy" decoding="async" alt="Rendu IA de zellige encadré par un arc marocain" data-i18n-attr="alt:artisan.image_alt">
+      </figure>
+      <div class="artisan__text reveal" style="--i:1">
+        <span class="eyebrow" data-i18n="artisan.eyebrow">Avec les artisans</span>
+        <h2 class="h2" id="artisan-title" data-i18n="artisan.title">Un outil d'exploration, pas un substitut au maâlem</h2>
+        <p class="lead" data-i18n="artisan.text">ZakhrafaAI aide à explorer de nouvelles combinaisons de formes et de couleurs, dans le respect des codes existants. Le geste, le choix des matières et la validation finale restent entre les mains du maâlem.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. FAQ -->
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="container faq">
+      <header class="section-head section-head--start faq__head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="faq.eyebrow">FAQ</span>
+        <h2 class="h2" id="faq-title" data-i18n="faq.title">Questions fréquentes</h2>
+      </header>
+      <div class="faq__list reveal" style="--i:1">
+        <details class="disclosure"><summary data-i18n="faq.q1">Est-ce gratuit ?</summary><div class="disclosure__body" data-i18n="faq.a1">Oui. Le mode Rapide est gratuit et illimité, sans inscription. Le Rendu IA est gratuit lui aussi, dans la limite d'un quota quotidien.</div></details>
+        <details class="disclosure"><summary data-i18n="faq.q2">Qu'est-ce que le Rendu IA ?</summary><div class="disclosure__body" data-i18n="faq.a2">Notre générateur dessine d'abord la géométrie du motif, puis un modèle d'image de Google Gemini la re-rend comme une photo de vrai zellige, tapis ou broderie. Si le service IA est indisponible, vous recevez l'image géométrique.</div></details>
+        <details class="disclosure"><summary data-i18n="faq.q3">Pourquoi une limite quotidienne ?</summary><div class="disclosure__body" data-i18n="faq.a3">Chaque Rendu IA a un coût. Un quota commun à tous les visiteurs est remis à zéro chaque jour à minuit UTC, avec une limite par connexion sur 10 minutes. Le nombre de rendus restants s'affiche dans l'atelier.</div></details>
+        <details class="disclosure"><summary data-i18n="faq.q4">Puis-je utiliser les images à des fins commerciales ?</summary><div class="disclosure__body" data-i18n="faq.a4">Les images sont générées pour l'exploration et l'inspiration. Avant tout usage commercial, vérifiez vos droits, notamment les conditions d'utilisation du fournisseur d'IA (Google) pour les Rendus IA, et mentionnez la tradition artisanale dont le motif s'inspire. ZakhrafaAI n'offre aucune garantie juridique sur ces images.</div></details>
+        <details class="disclosure"><summary data-i18n="faq.q5">Pourquoi les résultats varient-ils ?</summary><div class="disclosure__body" data-i18n="faq.a5">Chaque génération tire une nouvelle seed, qui fixe la composition et les couleurs. Pour retrouver un motif, notez sa seed et saisissez-la dans les réglages avancés. Le Rendu IA peut en outre varier légèrement d'un essai à l'autre.</div></details>
+        <details class="disclosure"><summary data-i18n="faq.q6">En quelles langues le site est-il disponible ?</summary><div class="disclosure__body" data-i18n="faq.a6">En français, en arabe et en anglais. Changez de langue à tout moment avec le sélecteur en haut de la page.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Le projet -->
+  <section class="section section--band" id="about" aria-labelledby="about-title">
+    <div class="container about">
+      <header class="section-head reveal">
+        <span class="eyebrow eyebrow--lines" data-i18n="about.eyebrow">Le projet</span>
+        <h2 class="h2" id="about-title" data-i18n="about.title">Né d'un projet de Master</h2>
+        <p class="lead" data-i18n="about.text">ZakhrafaAI est issu du Master Intelligence Artificielle et Data Science (AIDS) de la Faculté des Sciences et Techniques de Tanger, Université Abdelmalek Essaâdi, sous l'encadrement de M. Mostafa Ezziyani.</p>
+      </header>
+      <div class="about__cols">
+        <article class="about__card about__card--today reveal" style="--i:0">
+          <h3 class="about__label"><span class="about__pulse" aria-hidden="true"></span><span data-i18n="about.today_label">Ce qui tourne aujourd'hui</span></h3>
+          <p data-i18n="about.today">Aujourd'hui, le mode Rapide repose sur un générateur procédural, et le Rendu IA sur un modèle d'image de Google Gemini.</p>
+        </article>
+        <article class="about__card about__card--planned reveal" style="--i:1">
+          <h3 class="about__label"><span class="about__ring" aria-hidden="true"></span><span data-i18n="about.planned_label">Prévu par le rapport</span></h3>
+          <p data-i18n="about.planned">Le rapport prévoyait deux modèles entraînés : un GAN pour la génération rapide et un modèle de diffusion (Stable Diffusion + LoRA) pour la qualité. Ils ne tournent pas sur ce site : leurs points d'intégration existent dans le code et pourront être activés lorsque des modèles entraînés seront disponibles.</p>
+        </article>
+      </div>
+      <div class="section-cta reveal">
+        <a class="btn btn--primary btn--lg" href="/studio" data-href="/studio"><span data-i18n="nav.cta">Essayer l'atelier</span><span class="js-icon" data-icon="arrow-end"></span></a>
       </div>
     </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="container footer-inner">
-    <small>ZakhrafaAI — Projet AIDS, Faculté des Sciences et Techniques de Tanger, Université Abdelmalek Essadi.</small>
-    <small>Encadré par M. Mostafa Ezziyani</small>
-  </div>
-</footer>
-
-<script src="/assets/js/nav.js"></script>
+<footer id="site-footer"></footer>
+<script type="module" src="/assets/js/landing.js"></script>
 </body>
 </html>
