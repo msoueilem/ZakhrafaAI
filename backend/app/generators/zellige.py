@@ -69,11 +69,8 @@ def generate(params: GenParams) -> Image.Image:
                     outline=palette[-2],
                 )
 
-    # fines lignes de jointure façon plâtre / ciment entre les tesselles
-    grout = palette[-2]
-    step = max(4, int(size / 64))
-    for i in range(0, size, step):
-        draw.line([(i, 0), (i, size)], fill=grout, width=1)
+    # Pas de « jointure » tracée par-dessus l'image : les contours fins de
+    # chaque tesselle (outline ci-dessus) jouent déjà ce rôle.
 
     img = add_texture_noise(img, rng, strength=4.0 if params.engine == "diffusion" else 8.0)
     img = finish(img, params.engine)
