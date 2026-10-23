@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import main
-from app.services import gemini
+from app.services import deepseek, gemini
 
 
 @pytest.fixture(autouse=True)
@@ -19,6 +19,18 @@ def isolated_gemini(tmp_path, monkeypatch):
     gemini.reset_renderer()
     yield
     gemini.reset_renderer()
+
+
+@pytest.fixture(autouse=True)
+def isolated_deepseek(tmp_path, monkeypatch):
+    """Aucun test ne doit appeler le vrai DeepSeek ni lire une clé du shell."""
+    for var in ("DEEPSEEK_API_KEY", "DEEPSEEK_MODEL", "DEEPSEEK_DAILY_LIMIT",
+                "DEEPSEEK_PER_IP_LIMIT", "DEEPSEEK_TIMEOUT"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("ZAKHRAFAAI_DATA_DIR", str(tmp_path / "data"))
+    deepseek.reset_assistant()
+    yield
+    deepseek.reset_assistant()
 
 
 @pytest.fixture()
