@@ -17,3 +17,4 @@ run.bat
 .DS_Store
 **/.env
 **/.env.*
+backend/data

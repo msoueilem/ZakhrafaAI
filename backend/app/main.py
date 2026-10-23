@@ -3,7 +3,7 @@ ZakhrafaAI — API FastAPI.
 
 Endpoints :
   GET  /api/health                 -> statut du service
-  GET  /api/meta                   -> catégories / palettes / moteurs disponibles
+  GET  /api/meta                   -> catégories / palettes / moteurs / état du rendu IA
   POST /api/generate               -> génère une image (voir GenerateRequest)
   GET  /api/dashboard              -> statistiques globales du serveur (en mémoire, cf. §7)
 
@@ -14,15 +14,15 @@ from __future__ import annotations
 import random
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 
-from app.services import engine
+from app.services import engine, gemini
 
 APP_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = APP_DIR.parent
@@ -53,10 +53,17 @@ app.add_middleware(
 
 class GenerateRequest(BaseModel):
     category: str = Field(..., description="zellige | tapis | broderie")
-    engine: str = Field("gan", description="gan (rapide, 256px) | diffusion (détaillé, 768px) — rendu procédural sauf poids GAN fournis")
+    engine: str = Field("gan", description="gan (rapide, procédural, 256px) | diffusion (rendu IA Gemini, 768px, repli procédural)")
     palette: str = Field("zellige_classique")
     seed: Optional[int] = Field(None, description="graine aléatoire (bruit z); aléatoire si absente")
     size: Optional[int] = Field(None, description="taille de sortie en pixels (128-1024)")
+    prompt: Optional[Annotated[str, StringConstraints(strip_whitespace=True, max_length=gemini.PROMPT_MAX_LEN)]] = Field(
+        None, description="souhait de style libre (rendu IA uniquement, 300 caractères max)")
+
+    @field_validator("prompt")
+    @classmethod
+    def _empty_prompt_is_none(cls, v: Optional[str]) -> Optional[str]:
+        return v or None
 
 
 class GenerateResponse(BaseModel):
@@ -67,6 +74,8 @@ class GenerateResponse(BaseModel):
     seed: int
     width: int
     height: int
+    model: Optional[str] = None
+    notice: Optional[str] = None
 
 
 class HistoryItem(BaseModel):
@@ -101,11 +110,14 @@ def meta():
             {"id": "broderie", "label": "Broderie", "complexity": "Moyenne"},
         ],
         "engines": [
-            # ids historiques conservés pour compatibilité ; le rendu est
-            # procédural tant qu'aucun poids entraîné n'est branché.
-            {"id": "gan", "label": "Rapide (256px)", "default_resolution": 256},
-            {"id": "diffusion", "label": "Détaillé (768px)", "default_resolution": 768},
+            # ids historiques conservés pour compatibilité : « gan » est
+            # procédural (sauf poids GAN fournis), « diffusion » est le rendu
+            # IA hybride (géométrie procédurale + rendu Gemini).
+            {"id": "gan", "label": "Rapide (procédural)", "default_resolution": 256},
+            {"id": "diffusion", "label": "Rendu IA (Gemini)", "default_resolution": 768},
         ],
+        # état du rendu IA (la clé n'est jamais exposée)
+        "ai": gemini.get_renderer().status(),
         "palettes": [
             {"id": "fes_bleu", "label": "Bleu de Fès"},
             {"id": "zellige_classique", "label": "Zellige classique"},
@@ -117,8 +129,17 @@ def meta():
     }
 
 
+def client_ip(request: Request) -> Optional[str]:
+    """Le conteneur n'est joignable que via nginx en loopback, qui pose
+    X-Real-IP ; à défaut (lancement direct), l'adresse de la socket."""
+    real_ip = request.headers.get("x-real-ip", "").strip()
+    if real_ip:
+        return real_ip[:64]
+    return request.client.host if request.client else None
+
+
 @app.post("/api/generate", response_model=GenerateResponse)
-def generate(req: GenerateRequest):
+def generate(req: GenerateRequest, request: Request):
     try:
         result = engine.generate(
             category=req.category,
@@ -126,6 +147,8 @@ def generate(req: GenerateRequest):
             palette=req.palette,
             seed=req.seed,
             size=req.size,
+            prompt=req.prompt,
+            client_ip=client_ip(request),
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

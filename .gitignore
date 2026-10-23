@@ -7,3 +7,5 @@ backend/weights/*.pth
 .env
 .env.*
 !.env.example
+# compteur de rendus IA en local (ZAKHRAFAAI_DATA_DIR par défaut)
+backend/data/

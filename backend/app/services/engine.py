@@ -9,9 +9,13 @@ Comportement :
    générateur procédural (app/generators/), qui respecte les mêmes
    contraintes visuelles (catégorie, palette, résolution 256 en mode
    « gan » / 768 en mode « diffusion » par défaut, §3.8) sans dépendance
-   lourde ni GPU. Le mode « diffusion » n'appelle jamais Stable Diffusion :
-   app/models/diffusion.py n'est pas branché, c'est le même générateur
-   procédural, plus détaillé.
+   lourde ni GPU.
+3. Mode « diffusion » (libellé « Rendu IA ») : rendu hybride. Le générateur
+   procédural dessine la géométrie (768 px), puis un modèle d'image Gemini
+   la re-rend comme un objet artisanal réel (app/services/gemini.py). Sans
+   clé, quota épuisé ou erreur du service IA, on renvoie l'image
+   procédurale avec un `notice` explicatif — jamais d'erreur 500.
+   Stable Diffusion (app/models/diffusion.py) n'est toujours pas branché.
 
 Le GAN entraîné produit du 64x64 ; il est agrandi à la taille demandée
 (256 par défaut). Les modèles chargés sont mis en cache par catégorie.
@@ -36,6 +40,7 @@ from PIL import Image
 
 from app.generators import broderie, tapis, zellige
 from app.generators.utils import GenParams, resolve_size
+from app.services import gemini
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +56,9 @@ VALID_CATEGORIES = list(GENERATORS.keys())
 VALID_ENGINES = ["gan", "diffusion"]
 VALID_PALETTES = ["fes_bleu", "zellige_classique", "terracotta", "emeraude", "berbere", "monochrome_ivoire"]
 
+# résolution de l'image procédurale envoyée à Gemini comme base géométrique
+AI_BASE_SIZE = 768
+
 
 def _gan_weights_available(category: str) -> bool:
     path = WEIGHTS_DIR / f"gan_{category}_final.pth"
@@ -65,12 +73,15 @@ def image_to_data_url(img: Image.Image) -> str:
 
 
 class GenerationResult:
-    def __init__(self, image: Image.Image, engine_used: str, source: str, elapsed_ms: float, seed: int):
+    def __init__(self, image: Image.Image, engine_used: str, source: str, elapsed_ms: float, seed: int,
+                 model: Optional[str] = None, notice: Optional[str] = None):
         self.image = image
         self.engine_used = engine_used
-        self.source = source  # "trained_weights" | "procedural"
+        self.source = source  # "trained_weights" | "procedural" | "gemini"
         self.elapsed_ms = elapsed_ms
         self.seed = seed
+        self.model = model  # modèle Gemini si source == "gemini"
+        self.notice = notice  # raison du repli procédural en mode IA
 
     def to_dict(self):
         return {
@@ -81,6 +92,8 @@ class GenerationResult:
             "seed": self.seed,
             "width": self.image.width,
             "height": self.image.height,
+            "model": self.model,
+            "notice": self.notice,
         }
 
 
@@ -90,7 +103,11 @@ def generate(
     palette: str = "zellige_classique",
     seed: Optional[int] = None,
     size: Optional[int] = None,
+    prompt: Optional[str] = None,
+    client_ip: Optional[str] = None,
 ) -> GenerationResult:
+    """`prompt` (souhait de style) n'est utilisé qu'en mode « diffusion »
+    (rendu IA) ; `client_ip` sert à la limite de rendus IA par adresse."""
     if category not in VALID_CATEGORIES:
         raise ValueError(f"category doit être l'une de {VALID_CATEGORIES}")
     if engine not in VALID_ENGINES:
@@ -102,7 +119,10 @@ def generate(
     t0 = time.time()
 
     source = "procedural"
-    if engine == "gan" and _gan_weights_available(category):
+    model = notice = None
+    if engine == "diffusion":
+        image, source, model, notice = _generate_ai(category, palette, seed, size, prompt, client_ip)
+    elif engine == "gan" and _gan_weights_available(category):
         try:
             image = _generate_with_torch_gan(category, seed, size)
             source = "trained_weights"
@@ -117,7 +137,30 @@ def generate(
         image = GENERATORS[category].generate(params)
 
     elapsed_ms = (time.time() - t0) * 1000
-    return GenerationResult(image=image, engine_used=engine, source=source, elapsed_ms=elapsed_ms, seed=seed)
+    return GenerationResult(image=image, engine_used=engine, source=source, elapsed_ms=elapsed_ms, seed=seed,
+                            model=model, notice=notice)
+
+
+def _generate_ai(category: str, palette: str, seed: int, size: Optional[int],
+                 prompt: Optional[str], client_ip: Optional[str]):
+    """Procédural -> Gemini, avec repli procédural. Renvoie
+    (image, source, model, notice)."""
+    target = resolve_size("diffusion", size)
+    procedural = GENERATORS[category].generate(
+        GenParams(category=category, engine="diffusion", palette=palette, seed=seed, size=target))
+    renderer = gemini.get_renderer()
+    base = procedural
+    if target != AI_BASE_SIZE and renderer.config.enabled:
+        base = GENERATORS[category].generate(
+            GenParams(category=category, engine="diffusion", palette=palette, seed=seed, size=AI_BASE_SIZE))
+
+    outcome = renderer.render(
+        base_image=base, category=category, palette=palette, seed=seed,
+        size=target, prompt=prompt, client_ip=client_ip,
+    )
+    if outcome.ok:
+        return outcome.image, "gemini", outcome.model, None
+    return procedural, "procedural", None, outcome.notice
 
 
 @functools.lru_cache(maxsize=len(VALID_CATEGORIES))
