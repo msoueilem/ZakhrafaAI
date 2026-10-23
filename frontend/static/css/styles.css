@@ -228,5 +228,6 @@ tr:last-child td{ border-bottom:none; }
 }
 
 @media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
   *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
 }

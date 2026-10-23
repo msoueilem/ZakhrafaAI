@@ -107,18 +107,31 @@
     els.promptCount.textContent = `${els.promptInput.value.length} / ${PROMPT_MAX}`;
   }
 
+  // Sur téléphone, les réglages sont sous la galerie : au lancement, on ramène
+  // la zone de résultat à l'écran si elle n'est pas visible (sans animation
+  // si l'utilisateur a demandé à réduire les mouvements).
+  function revealResultArea() {
+    const rect = els.canvasWrap.getBoundingClientRect();
+    const navH = document.querySelector(".nav")?.offsetHeight || 0;
+    const visible = rect.top >= navH && rect.bottom <= window.innerHeight;
+    if (visible) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    els.canvasWrap.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  }
+
   function setLoading(request) {
     const text = request.engine === "diffusion" && ai && ai.enabled
       ? "Rendu IA en cours… (10–30 s)"
       : "Génération en cours…";
     els.canvasWrap.innerHTML = `
-      <div class="loading-shimmer">
+      <div class="loading-shimmer" role="status">
         <div class="spinner"></div>
         <span>${text}</span>
       </div>`;
     els.noticeBox.style.display = "none";
     els.generateBtn.disabled = true;
     els.generateBtn.textContent = "Génération…";
+    revealResultArea();
   }
 
   function renderResult(result, request) {
