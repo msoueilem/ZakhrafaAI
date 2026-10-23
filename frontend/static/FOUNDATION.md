@@ -31,6 +31,7 @@ Landing : `initShell({ sectionLinks: [{ href: "#how", key: "nav.how" }, …] })`
 - Nouvelle clé : préfixe de la page (`studio.xxx`), clés plates à points, ajoutée en fr+ar+en. Besoin d'une clé commune : la signaler, ne pas l'ajouter.
 - HTML : `data-i18n="k"` (textContent, écrase les enfants : mettre icônes et texte dans des éléments frères),
   `data-i18n-attr="placeholder:k;aria-label:k;title:k;alt:k"`, `data-i18n-params='{"n":3}'` (interpolation `{n}`). Aucune injection HTML depuis les JSON.
+- Texte saisi par l'utilisateur ou produit par un modèle (champs, explications, notes) : `dir="auto"` sur l'élément.
 - JS : `t(key, params)` (repli fr puis clé) · `has(key)` · `apply(rootEl)` après injection de HTML à attributs · `getLang() isRTL() getLocale()`
   · `setLang(l)` (sans rechargement, `?lang=`, localStorage `zk.lang` ; seul le dernier appel s'applique si les chargements se croisent) · `onLangChange(cb)` / événement `document` `i18n:change` {lang,dir,locale} :
   **tout texte rendu en JS doit être re-rendu dans ce callback**. Langue : `?lang=` → localStorage → navigator.languages → fr.

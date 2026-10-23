@@ -374,6 +374,8 @@ main:focus { outline: none; }
 }
 .textarea { min-block-size: 96px; resize: vertical; line-height: var(--lh-body); }
 .input::placeholder, .textarea::placeholder { color: var(--text-3); opacity: 1; }
+/* dir="auto" (texte libre) : vide, le champ suit la direction de la page (placeholder arabe à droite) */
+[dir="rtl"] :is(.input, .textarea)[dir="auto"]:placeholder-shown { direction: rtl; }
 .input:hover, .textarea:hover, .select:hover { border-color: rgb(148 178 214 / 0.34); }
 .input:focus-visible, .textarea:focus-visible, .select:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(245 181 68 / 0.25); }
 .input[aria-invalid="true"], .textarea[aria-invalid="true"] { border-color: var(--danger); }

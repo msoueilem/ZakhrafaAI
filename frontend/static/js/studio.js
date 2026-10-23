@@ -179,6 +179,7 @@ function noticeEl({ tone = "info", title, lines = [], action }) {
     const p = document.createElement("p");
     if (line.node) p.appendChild(line.node());
     else p.textContent = tx(line);
+    if (line.raw != null) p.dir = "auto"; // texte du modèle ou du serveur : direction selon son contenu
     body.appendChild(p);
   }
   if (action) body.appendChild(action());
@@ -915,6 +916,7 @@ async function loadCaption() {
 function renderCaption(text) {
   const p = document.createElement("p");
   p.className = "about__text";
+  p.dir = "auto";
   p.textContent = text;
   const note = document.createElement("p");
   note.className = "field__hint about__note";
