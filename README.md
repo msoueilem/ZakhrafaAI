@@ -86,8 +86,8 @@ shell) :
 | Variable              | Défaut                          | Rôle |
 |-----------------------|---------------------------------|------|
 | `GEMINI_API_KEY`      | *(vide)*                        | clé API Gemini ; vide ⇒ rendu IA désactivé (repli procédural) |
-| `GEMINI_IMAGE_MODEL`  | `gemini-3.1-flash-lite-image`   | modèle d'image (`gemini-3.1-flash-image`, `gemini-3-pro-image`…) |
-| `GEMINI_DAILY_LIMIT`  | `60`                            | rendus IA réussis max par jour UTC (≈ 2 $ avec le modèle par défaut) |
+| `GEMINI_IMAGE_MODEL`  | `gemini-3.1-flash-image`        | modèle d'image (`gemini-3.1-flash-lite-image` moins cher mais rendu du zellige trop plat, `gemini-3-pro-image`…) |
+| `GEMINI_DAILY_LIMIT`  | `30`                            | rendus IA réussis max par jour UTC (≈ 2 $ avec le modèle par défaut) |
 | `GEMINI_PER_IP_LIMIT` | `5`                             | tentatives max par adresse IP sur 10 min |
 | `GEMINI_TIMEOUT`      | `90`                            | délai max d'un appel, en secondes |
 | `ZAKHRAFAAI_DATA_DIR` | `/data` (Docker), `backend/data` | dossier du compteur journalier persistant |

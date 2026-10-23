@@ -73,6 +73,7 @@ class GenParams:
     seed: int | None = None
     size: int | None = None  # taille finale carrée ; None = défaut selon engine
     color_mode: str = "palette"  # palette | monochrome | random
+    cells: int | None = None  # force la densité de la grille (base du rendu IA : motifs plus grands)
 
 
 def resolve_size(engine: str, requested: int | None) -> int:

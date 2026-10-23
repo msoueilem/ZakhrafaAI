@@ -58,6 +58,9 @@ VALID_PALETTES = ["fes_bleu", "zellige_classique", "terracotta", "emeraude", "be
 
 # résolution de l'image procédurale envoyée à Gemini comme base géométrique
 AI_BASE_SIZE = 768
+# grille plus lâche pour la base IA : avec ~10 étoiles par rangée, Gemini ne fait
+# qu'une retouche à plat ; avec 3, il rend de vraies tesselles émaillées et jointoyées
+AI_BASE_CELLS = {"zellige": 3}
 
 
 def _gan_weights_available(category: str) -> bool:
@@ -150,9 +153,11 @@ def _generate_ai(category: str, palette: str, seed: int, size: Optional[int],
         GenParams(category=category, engine="diffusion", palette=palette, seed=seed, size=target))
     renderer = gemini.get_renderer()
     base = procedural
-    if target != AI_BASE_SIZE and renderer.config.enabled:
+    base_cells = AI_BASE_CELLS.get(category)
+    if renderer.config.enabled and (target != AI_BASE_SIZE or base_cells):
         base = GENERATORS[category].generate(
-            GenParams(category=category, engine="diffusion", palette=palette, seed=seed, size=AI_BASE_SIZE))
+            GenParams(category=category, engine="diffusion", palette=palette, seed=seed,
+                      size=AI_BASE_SIZE, cells=base_cells))
 
     outcome = renderer.render(
         base_image=base, category=category, palette=palette, seed=seed,

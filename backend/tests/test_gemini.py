@@ -123,6 +123,22 @@ def test_base_image_is_768_even_for_other_sizes(client, enable):
     assert Image.open(io.BytesIO(base64.b64decode(base_b64))).size == (768, 768)
 
 
+def test_zellige_base_uses_larger_motifs(client, enable):
+    from app.generators import zellige
+    from app.generators.utils import GenParams
+
+    fake = enable()
+    ai(client)
+    base_b64 = json.loads(fake.requests[0].content)["contents"][0]["parts"][1]["inline_data"]["data"]
+    sent = Image.open(io.BytesIO(base64.b64decode(base_b64))).convert("RGB")
+    loose = zellige.generate(GenParams(category="zellige", engine="diffusion", palette="fes_bleu",
+                                       seed=7, size=768, cells=3))
+    dense = zellige.generate(GenParams(category="zellige", engine="diffusion", palette="fes_bleu",
+                                       seed=7, size=768))
+    assert sent.tobytes() == loose.tobytes()
+    assert sent.tobytes() != dense.tobytes()
+
+
 @pytest.mark.parametrize("category, word", [("tapis", "rug"), ("broderie", "embroidery")])
 def test_prompt_depends_on_category(client, enable, category, word):
     fake = enable()

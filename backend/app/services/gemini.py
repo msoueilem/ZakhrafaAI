@@ -12,8 +12,8 @@ pleinement supportée), via httpx — sans le SDK google-genai.
 
 Configuration (variables d'environnement) :
   GEMINI_API_KEY       clé API ; absente => rendu IA désactivé (repli procédural)
-  GEMINI_IMAGE_MODEL   modèle d'image (défaut : gemini-3.1-flash-lite-image)
-  GEMINI_DAILY_LIMIT   rendus IA réussis max par jour UTC (défaut : 60)
+  GEMINI_IMAGE_MODEL   modèle d'image (défaut : gemini-3.1-flash-image)
+  GEMINI_DAILY_LIMIT   rendus IA réussis max par jour UTC (défaut : 30)
   GEMINI_PER_IP_LIMIT  tentatives max par IP sur 10 min (défaut : 5)
   GEMINI_TIMEOUT       délai max d'un appel, en secondes (défaut : 90)
   ZAKHRAFAAI_DATA_DIR  dossier où persister le compteur journalier
@@ -51,7 +51,7 @@ from PIL import Image, UnidentifiedImageError
 logger = logging.getLogger(__name__)
 
 API_BASE = "https://generativelanguage.googleapis.com/v1beta"
-DEFAULT_MODEL = "gemini-3.1-flash-lite-image"
+DEFAULT_MODEL = "gemini-3.1-flash-image"
 PER_IP_WINDOW_S = 600  # 10 minutes
 CACHE_SIZE = 64
 USAGE_FILENAME = "gemini_usage.json"
@@ -91,7 +91,7 @@ def _env_float(name: str, default: float) -> float:
 class GeminiConfig:
     api_key: Optional[str]
     model: str = DEFAULT_MODEL
-    daily_limit: int = 60
+    daily_limit: int = 30
     per_ip_limit: int = 5
     timeout: float = 90.0
     data_dir: Path = _DEFAULT_DATA_DIR
@@ -110,7 +110,7 @@ class GeminiConfig:
         return cls(
             api_key=os.environ.get("GEMINI_API_KEY", "").strip() or None,
             model=os.environ.get("GEMINI_IMAGE_MODEL", "").strip() or DEFAULT_MODEL,
-            daily_limit=_env_int("GEMINI_DAILY_LIMIT", 60),
+            daily_limit=_env_int("GEMINI_DAILY_LIMIT", 30),
             per_ip_limit=_env_int("GEMINI_PER_IP_LIMIT", 5),
             timeout=_env_float("GEMINI_TIMEOUT", 90.0),
             data_dir=Path(os.environ.get("ZAKHRAFAAI_DATA_DIR", "").strip() or _DEFAULT_DATA_DIR),

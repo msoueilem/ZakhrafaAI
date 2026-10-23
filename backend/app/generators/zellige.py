@@ -68,7 +68,7 @@ def generate(params: GenParams) -> Image.Image:
     img, draw = new_canvas(size, bg)
     lay = _choose_layout(rng, params.engine)
 
-    cells = lay["cells"]
+    cells = params.cells or lay["cells"]
     cell_size = size / cells
     r_outer = cell_size * lay["outer_ratio"]
     r_inner = r_outer * lay["inner_ratio"]
