@@ -35,7 +35,11 @@ Garanties :
   en chaîne JSON et présenté comme une donnée : le prompt système est fixe ;
 - chaque appel facturé (réponse HTTP 200, relance comprise) compte dans le
   quota journalier, persisté sur disque ; chaque requête hors cache compte
-  pour la limite par IP.
+  pour la limite par IP ;
+- chaque appel amont réserve d'abord une place dans le quota (sous verrou) ;
+  la relance en réserve une nouvelle, ou échoue en 429 assist_daily_limit :
+  `facturés + réservés <= DEEPSEEK_DAILY_LIMIT` reste vrai même avec des
+  requêtes concurrentes.
 """
 from __future__ import annotations
 
@@ -349,6 +353,14 @@ class _Unparsable(Exception):
     pass
 
 
+class _Slot:
+    """Réservations de quota détenues par une requête en cours."""
+    __slots__ = ("held",)
+
+    def __init__(self) -> None:
+        self.held = 0
+
+
 def _seconds_to_utc_midnight() -> int:
     now = datetime.now(timezone.utc)
     midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -375,7 +387,7 @@ class DeepSeekAssistant:
         self._lock = threading.Lock()
         self._cache: "OrderedDict[CaptionKey, str]" = OrderedDict()
         self._ip_hits: "OrderedDict[str, Deque[float]]" = OrderedDict()
-        self._inflight = 0
+        self._reserved = 0  # appels amont réservés, pas encore facturés ni libérés
         self._day, self._count = self._load_usage()
 
     # --- compteur journalier persistant ------------------------------------
@@ -412,10 +424,22 @@ class DeepSeekAssistant:
         if today != self._day:
             self._day, self._count = today, 0
 
-    def _count_call(self) -> None:
+    def _try_reserve(self) -> bool:
+        """À appeler sous verrou. Réserve une place pour un appel amont."""
+        self._roll_day()
+        if self._count + self._reserved >= self.config.daily_limit:
+            return False
+        self._reserved += 1
+        return True
+
+    def _count_call(self, slot: "_Slot") -> None:
+        """Appel facturé : sa réservation devient un appel compté."""
         with self._lock:
             self._roll_day()
             self._count += 1
+            if slot.held > 0:
+                slot.held -= 1
+                self._reserved -= 1
             self._save_usage()
 
     def remaining_today(self) -> Optional[int]:
@@ -501,21 +525,31 @@ class DeepSeekAssistant:
         if not cfg.enabled:
             raise AssistError(CODE_DISABLED, 503, "clé DEEPSEEK_API_KEY absente")
 
+        slot = _Slot()
         with self._lock:
             self._roll_day()
-            if self._count + self._inflight >= cfg.daily_limit:
+            if self._count + self._reserved >= cfg.daily_limit:
                 raise AssistError(CODE_DAILY_LIMIT, 429, "quota journalier atteint",
                                   retry_after=_seconds_to_utc_midnight())
             wait = self._ip_retry_after(client_ip, time.time())
             if wait is not None:
                 raise AssistError(CODE_IP_LIMIT, 429, "limite par IP atteinte", retry_after=wait)
-            self._inflight += 1
+            self._try_reserve()
+            slot.held = 1
 
         try:
             t0 = time.time()
             # une seule relance si la sortie n'est pas un JSON exploitable
             for attempt in (1, 2):
-                content = self._call(system, user, max_tokens, temperature)
+                if attempt > 1:
+                    # la relance est un appel facturé de plus : nouvelle réservation
+                    with self._lock:
+                        if not self._try_reserve():
+                            raise AssistError(CODE_DAILY_LIMIT, 429,
+                                              "quota journalier atteint avant la relance",
+                                              retry_after=_seconds_to_utc_midnight())
+                        slot.held += 1
+                content = self._call(system, user, max_tokens, temperature, slot)
                 try:
                     result = parse(content)
                 except (ValueError, TypeError) as exc:
@@ -526,7 +560,7 @@ class DeepSeekAssistant:
                 return result
             raise AssistError(CODE_ERROR, 502, "JSON inexploitable après relance")
         except AssistError as exc:
-            if exc.code == CODE_ERROR:
+            if exc.code in (CODE_ERROR, CODE_DAILY_LIMIT):
                 logger.warning("DeepSeek %s échoué (%s) : %s", task, cfg.model, redact(exc.reason))
             raise
         except Exception as exc:  # filet de sécurité : jamais de 500 à cause de DeepSeek
@@ -534,15 +568,17 @@ class DeepSeekAssistant:
                          task, cfg.model, redact(traceback.format_exc()))
             raise AssistError(CODE_ERROR, 502, "erreur interne") from exc
         finally:
-            with self._lock:
-                self._inflight -= 1
+            with self._lock:  # réservations non consommées (échec avant facturation)
+                self._reserved -= slot.held
+                slot.held = 0
 
     def _http(self) -> httpx.Client:
         if self._client is None:
             self._client = httpx.Client(transport=self._transport, timeout=self.config.timeout)
         return self._client
 
-    def _call(self, system: str, user: str, max_tokens: int, temperature: float) -> str:
+    def _call(self, system: str, user: str, max_tokens: int, temperature: float,
+              slot: Optional["_Slot"] = None) -> str:
         body = {
             "model": self.config.model,
             "messages": [
@@ -565,7 +601,7 @@ class DeepSeekAssistant:
 
         if res.status_code != 200:
             raise AssistError(CODE_ERROR, 502, f"HTTP {res.status_code} : {_api_error_message(res)}")
-        self._count_call()  # réponse 200 = appel facturé
+        self._count_call(slot or _Slot())  # réponse 200 = appel facturé
         try:
             payload = res.json()
             choice = payload["choices"][0]

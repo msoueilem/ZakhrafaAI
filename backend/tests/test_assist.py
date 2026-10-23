@@ -285,6 +285,63 @@ def test_retry_counts_both_billed_calls(client, enable):
     assert client.get("/api/assist/status").json()["remaining_today"] == 8
 
 
+def test_concurrent_retries_never_exceed_daily_limit(tmp_path):
+    """Deux requêtes concurrentes dont la 1re réponse est inexploitable : sans
+    réservation de la relance, 4 appels seraient facturés pour un quota de 3."""
+    import threading
+
+    barrier = threading.Barrier(2, timeout=5)
+    lock = threading.Lock()
+    seen = []
+
+    def responder(request):
+        with lock:
+            seen.append(request)
+            n = len(seen)
+        if n <= 2:  # les deux premiers appels ont réservé avant toute facturation
+            barrier.wait()
+            return chat_response("{")
+        return json_reply({"prompt": "ok"})
+
+    svc = deepseek.reset_assistant(
+        deepseek.DeepSeekConfig(api_key=FAKE_KEY, daily_limit=3, per_ip_limit=20, timeout=5,
+                                data_dir=tmp_path / "data"),
+        transport=httpx.MockTransport(responder))
+    results = []
+
+    def worker(ip):
+        try:
+            results.append(svc.enhance(prompt="bleu", category="zellige", lang="fr", client_ip=ip))
+        except deepseek.AssistError as exc:
+            results.append(exc.code)
+
+    threads = [threading.Thread(target=worker, args=(f"198.51.100.{i}",)) for i in (1, 2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(10)
+    assert len(seen) == 3  # 2 premiers essais + 1 seule relance
+    assert sorted(results) == sorted(["ok", "assist_daily_limit"])
+    assert svc.remaining_today() == 0 and svc._reserved == 0
+    usage = json.loads((tmp_path / "data" / deepseek.USAGE_FILENAME).read_text())
+    assert usage["count"] == 3
+
+
+def test_retry_refused_when_quota_exhausted(client, enable):
+    fake = enable(chat_response("{"), json_reply({"prompt": "ok"}), daily_limit=1)
+    res = enhance(client)
+    assert res.status_code == 429 and res.json() == {"code": "assist_daily_limit"}
+    assert fake.calls == 1
+    assert client.get("/api/assist/status").json()["remaining_today"] == 0
+
+
+def test_reservation_released_on_unbilled_failure(client, enable):
+    enable(httpx.Response(500, json={"error": {"message": "boom"}}), daily_limit=1)
+    assert enhance(client).status_code == 502
+    svc = deepseek.get_assistant()
+    assert svc._reserved == 0 and svc.remaining_today() == 1
+
+
 # --- erreurs amont ------------------------------------------------------------
 
 def test_upstream_http_error_is_502_without_key_in_logs(client, enable, caplog):
