@@ -20,7 +20,10 @@
   --emerald:#2E7D5B;
   --ivory:#F2E9D8;
   --muted:#9FB4C2;
-  --danger:#C1493A;
+  /* couleurs de texte vérifiées WCAG AA (≥ 4.5:1) sur tous les fonds de
+     panneau (#0B2436 … #173C56) ; --emerald reste pour les surfaces */
+  --danger:#F2998A;
+  --emerald-text:#62C08F;
 
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -194,8 +197,8 @@ tr:last-child td{ border-bottom:none; }
 
 .badge-source{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:0.72rem; padding:4px 10px; border-radius:20px; border:1px solid var(--line); }
 .badge-source.procedural{ color:var(--gold-soft); }
-.badge-source.trained_weights{ color:var(--emerald); }
-.badge-source.gemini{ color:var(--emerald); border-color:rgba(46,125,91,0.5); }
+.badge-source.trained_weights{ color:var(--emerald-text); }
+.badge-source.gemini{ color:var(--emerald-text); border-color:rgba(98,192,143,0.5); }
 .notice{ white-space:pre-line; margin-top:12px; padding:10px 12px; border-left:3px solid var(--terracotta); background:rgba(181,83,60,0.12); color:var(--ivory); font-size:0.84rem; border-radius:4px; }
 .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
 
