@@ -43,7 +43,7 @@ import os
 import threading
 import time
 import traceback
-from collections import OrderedDict, deque
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -52,6 +52,7 @@ from typing import Any, Deque, Dict, Optional, Tuple
 import httpx
 from PIL import Image, UnidentifiedImageError
 
+from app import net
 from app.redact import redact
 
 logger = logging.getLogger(__name__)
@@ -264,7 +265,7 @@ class GeminiRenderer:
         self._client: Optional[httpx.Client] = None
         self._lock = threading.Lock()
         self._cache: "OrderedDict[CacheKey, bytes]" = OrderedDict()
-        self._ip_hits: Dict[str, Deque[float]] = {}
+        self._ip_hits: "OrderedDict[str, Deque[float]]" = OrderedDict()
         self._inflight = 0
         self._day, self._count = self._load_usage()
 
@@ -319,14 +320,11 @@ class GeminiRenderer:
 
     # --- limite par IP (fenêtre glissante en mémoire) ----------------------
 
-    def _ip_allowed(self, ip: str, now: float) -> bool:
+    def _ip_allowed(self, ip: Optional[str], now: float) -> bool:
         """À appeler sous verrou. Enregistre la tentative si elle est permise."""
         cutoff = now - PER_IP_WINDOW_S
-        # ménage global léger pour ne pas accumuler les IP inactives
-        if len(self._ip_hits) > 1024:
-            for key in [k for k, d in self._ip_hits.items() if not d or d[-1] < cutoff]:
-                del self._ip_hits[key]
-        hits = self._ip_hits.setdefault(ip, deque())
+        # clé : IPv4, ou /64 en IPv6 ; dictionnaire borné (éviction O(1))
+        hits = net.ip_hits(self._ip_hits, net.ip_key(ip))
         while hits and hits[0] < cutoff:
             hits.popleft()
         if len(hits) >= self.config.per_ip_limit:
@@ -376,7 +374,7 @@ class GeminiRenderer:
             self._roll_day()
             if self._count + self._inflight >= cfg.daily_limit:
                 return _fallback(CODE_DAILY_LIMIT, n=cfg.daily_limit)
-            if not self._ip_allowed(client_ip or "inconnue", time.time()):
+            if not self._ip_allowed(client_ip, time.time()):
                 return _fallback(CODE_IP_LIMIT, n=cfg.per_ip_limit)
             self._inflight += 1
 

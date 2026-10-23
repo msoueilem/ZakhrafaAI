@@ -21,6 +21,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StringConstraints
 
+from app.net import client_ip
 from app.services import deepseek, engine
 
 logger = logging.getLogger(__name__)
@@ -88,15 +89,6 @@ ERRORS = {503: {"model": ErrorResponse}, 429: {"model": ErrorResponse}, 502: {"m
 # ---------------------------------------------------------------------------
 # Utilitaires
 # ---------------------------------------------------------------------------
-
-def client_ip(request: Request) -> Optional[str]:
-    """Même règle que app.main.client_ip : le conteneur n'est joignable que
-    via nginx en loopback, qui pose X-Real-IP ; à défaut, l'adresse de la socket."""
-    real_ip = request.headers.get("x-real-ip", "").strip()
-    if real_ip:
-        return real_ip[:64]
-    return request.client.host if request.client else None
-
 
 def _guarded(call: Callable[[], dict]):
     """Traduit les échecs en `{"code": ...}` ; jamais de 500."""

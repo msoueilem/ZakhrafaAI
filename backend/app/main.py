@@ -35,6 +35,7 @@ from PIL import Image, features
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.generators.utils import PALETTE_LABELS, PALETTES
+from app.net import client_ip
 from app.routers import assist
 from app.services import deepseek, engine, gemini
 
@@ -214,15 +215,6 @@ def meta():
         # état de l'assistant DeepSeek (même contenu que /api/assist/status)
         "assist": deepseek.get_assistant().status(),
     }
-
-
-def client_ip(request: Request) -> Optional[str]:
-    """Le conteneur n'est joignable que via nginx en loopback, qui pose
-    X-Real-IP ; à défaut (lancement direct), l'adresse de la socket."""
-    real_ip = request.headers.get("x-real-ip", "").strip()
-    if real_ip:
-        return real_ip[:64]
-    return request.client.host if request.client else None
 
 
 @app.post("/api/generate", response_model=GenerateResponse)

@@ -46,7 +46,7 @@ import re
 import threading
 import time
 import traceback
-from collections import OrderedDict, deque
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -55,6 +55,7 @@ from typing import Callable, Deque, Dict, Optional, Tuple, TypeVar
 import httpx
 
 from app.generators.utils import DEFAULT_PALETTE, PALETTE_LABELS, PALETTES
+from app import net
 from app.redact import redact
 from app.services import engine
 from app.services.gemini import PROMPT_MAX_LEN
@@ -373,7 +374,7 @@ class DeepSeekAssistant:
         self._client: Optional[httpx.Client] = None
         self._lock = threading.Lock()
         self._cache: "OrderedDict[CaptionKey, str]" = OrderedDict()
-        self._ip_hits: Dict[str, Deque[float]] = {}
+        self._ip_hits: "OrderedDict[str, Deque[float]]" = OrderedDict()
         self._inflight = 0
         self._day, self._count = self._load_usage()
 
@@ -434,15 +435,12 @@ class DeepSeekAssistant:
 
     # --- limite par IP (fenêtre glissante en mémoire) ----------------------
 
-    def _ip_retry_after(self, ip: str, now: float) -> Optional[int]:
+    def _ip_retry_after(self, ip: Optional[str], now: float) -> Optional[int]:
         """À appeler sous verrou. Enregistre la requête si elle est permise et
         renvoie None ; sinon le nombre de secondes avant qu'elle le soit."""
         cutoff = now - PER_IP_WINDOW_S
-        # ménage global léger pour ne pas accumuler les IP inactives
-        if len(self._ip_hits) > 1024:
-            for key in [k for k, d in self._ip_hits.items() if not d or d[-1] < cutoff]:
-                del self._ip_hits[key]
-        hits = self._ip_hits.setdefault(ip, deque())
+        # clé : IPv4, ou /64 en IPv6 ; dictionnaire borné (éviction O(1))
+        hits = net.ip_hits(self._ip_hits, net.ip_key(ip))
         while hits and hits[0] < cutoff:
             hits.popleft()
         if len(hits) >= self.config.per_ip_limit:
@@ -508,7 +506,7 @@ class DeepSeekAssistant:
             if self._count + self._inflight >= cfg.daily_limit:
                 raise AssistError(CODE_DAILY_LIMIT, 429, "quota journalier atteint",
                                   retry_after=_seconds_to_utc_midnight())
-            wait = self._ip_retry_after(client_ip or "inconnue", time.time())
+            wait = self._ip_retry_after(client_ip, time.time())
             if wait is not None:
                 raise AssistError(CODE_IP_LIMIT, 429, "limite par IP atteinte", retry_after=wait)
             self._inflight += 1
