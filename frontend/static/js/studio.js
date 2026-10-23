@@ -200,6 +200,24 @@ function flash(node) {
   node._flashT = setTimeout(() => node.classList.remove("is-suggested"), 2400);
 }
 
+/** Nombre isolé LTR en police mono (.num) : l'unité traduite reste dans la police du texte. */
+function numEl(value) {
+  const b = ltr(value);
+  b.classList.add("num");
+  return b;
+}
+
+/** t(key) dont le paramètre {n} devient un <bdi class="num"> : « 2,3 » en mono, « ث » / « s » en police de texte. */
+function withNum(key, n) {
+  const frag = document.createDocumentFragment();
+  const parts = t(key, { n: "\u0000" }).split("\u0000");
+  parts.forEach((part, i) => {
+    if (i) frag.appendChild(numEl(n));
+    if (part) frag.appendChild(document.createTextNode(part));
+  });
+  return frag;
+}
+
 /** Compteur « n / max » isolé LTR (lisible en arabe). */
 function setCounter(node, n, max) {
   node.replaceChildren(ltr(t("studio.prompt.counter", { n, max })));
@@ -562,12 +580,12 @@ function renderEntryText() {
   el.img.alt = t("studio.result.image_alt", { category: catName(request.category), palette: paletteName(request.palette) });
 
   el.metaMode.textContent = modeName(result.engine);
-  el.metaSize.replaceChildren(ltr(`${result.width}×${result.height}`));
+  el.metaSize.replaceChildren(numEl(`${result.width}×${result.height}`));
   const ms = Number(result.elapsed_ms) || 0;
-  el.metaTime.textContent = ms < 1000
-    ? t("studio.meta.time_value", { n: Math.round(ms) })
-    : t("studio.meta.time_seconds", { n: formatNumber(ms / 1000, { maximumFractionDigits: 1 }) });
-  el.metaSeed.replaceChildren(ltr(result.seed));
+  el.metaTime.replaceChildren(ms < 1000
+    ? withNum("studio.meta.time_value", String(Math.round(ms)))
+    : withNum("studio.meta.time_seconds", formatNumber(ms / 1000, { maximumFractionDigits: 1 })));
+  el.metaSeed.replaceChildren(numEl(result.seed));
   el.meta.hidden = false;
 
   const badge = document.createElement("span");

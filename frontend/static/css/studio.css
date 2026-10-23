@@ -228,8 +228,11 @@
   font-size: var(--fs-xs);
 }
 .meta__item dt { color: var(--text-3); }
-.meta__item dd { margin: 0; color: var(--text); font-family: var(--font-mono); display: inline-flex; align-items: center; gap: var(--sp-1); }
-.meta__item:first-child dd { font-family: var(--font-body); font-weight: var(--fw-semibold); }
+/* Police mono UNIQUEMENT sur les nombres (.num) : IBM Plex Mono n'a pas de glyphes arabes,
+   une unité traduite (« ث », « ملي ثانية ») en mono s'afficherait en lettres détachées. */
+.meta__item dd { margin: 0; color: var(--text); display: inline-flex; align-items: center; gap: var(--sp-1); }
+.meta__item dd .num { font-family: var(--font-mono); }
+.meta__item:first-child dd { font-weight: var(--fw-semibold); }
 .meta__item--seed { padding-inline-end: 0; }
 .seed-copy {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-1);
