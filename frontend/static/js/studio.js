@@ -42,8 +42,9 @@
     seedError: document.getElementById("seedError"),
   };
 
-  // Dernier résultat + paramètres de la requête qui l'a produit (le nom du
-  // fichier téléchargé et « Régénérer » s'appuient dessus, pas sur l'état courant).
+  // Résultat affiché { result, request, notices } (le nom du fichier
+  // téléchargé et « Régénérer » s'appuient dessus, pas sur l'état courant) ;
+  // `history` garde les 12 derniers, restaurables depuis les miniatures.
   let last = null;
   const history = [];
 
@@ -171,16 +172,21 @@
     revealResultArea();
   }
 
-  function renderResult(result, request) {
-    // seed renvoyée par le serveur : permet de reproduire exactement l'image
-    last = { image: result.image, request: { ...request, seed: result.seed } };
+  const CAT_LABELS = { zellige: "Zellige", tapis: "Tapis", broderie: "Broderie" };
+  const engineLabel = (engine) => (engine === "gan" ? "Rapide" : "Rendu IA");
+
+  // Affiche un résultat (nouveau ou restauré depuis l'historique) : image,
+  // méta, badge, notice ; Télécharger / Régénérer s'appuient sur `entry`.
+  function showEntry(entry) {
+    const { result, request } = entry;
+    last = entry;
     els.canvasWrap.innerHTML = "";
     const img = document.createElement("img");
     img.src = result.image;
     img.alt = `Motif ${request.category} généré`;
     els.canvasWrap.appendChild(img);
     els.metaRow.style.display = "flex";
-    els.metaEngine.textContent = result.engine === "gan" ? "Rapide" : "Rendu IA";
+    els.metaEngine.textContent = engineLabel(result.engine);
     els.metaSize.textContent = `${result.width}×${result.height}`;
     els.metaTime.textContent = `${result.elapsed_ms} ms`;
     els.metaSeed.textContent = result.seed;
@@ -193,25 +199,50 @@
     badge.innerHTML = `<span class="dot"></span>`;
     badge.appendChild(document.createTextNode(label));
     els.metaSourceWrap.replaceChildren(badge);
+    els.noticeBox.textContent = entry.notices.join("\n");
+    els.noticeBox.style.display = entry.notices.length ? "" : "none";
+    els.downloadBtn.disabled = false;
+    els.regenBtn.disabled = false;
+    renderHistory();
+  }
+
+  // Miniatures = boutons qui restaurent le résultat correspondant
+  function renderHistory() {
+    els.galleryGrid.replaceChildren();
+    history.forEach((entry) => {
+      const { result, request } = entry;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "gallery-item";
+      const current = entry === last;
+      if (current) btn.setAttribute("aria-current", "true");
+      btn.setAttribute("aria-label",
+        `Afficher : ${CAT_LABELS[request.category] || request.category}, ${engineLabel(result.engine)}, seed ${result.seed}`
+        + (current ? " (affiché)" : ""));
+      const img = document.createElement("img");
+      img.src = result.image;
+      img.alt = "";
+      btn.appendChild(img);
+      btn.addEventListener("click", () => {
+        showEntry(entry);
+        els.galleryGrid.querySelector('[aria-current="true"]')?.focus();
+      });
+      els.galleryGrid.appendChild(btn);
+    });
+  }
+
+  function renderResult(result, request) {
     // le serveur borne la résolution à 128–1024 px : on le signale
     const notices = [];
     if (request.size && result.width !== request.size) {
       notices.push(`Résolution ajustée à ${result.width} px (autorisé : ${SIZE_MIN}–${SIZE_MAX} px).`);
     }
     if (result.notice) notices.push(result.notice);
-    els.noticeBox.textContent = notices.join("\n");
-    els.noticeBox.style.display = notices.length ? "" : "none";
-    els.downloadBtn.disabled = false;
-    els.regenBtn.disabled = false;
-
-    history.unshift(result.image);
+    // seed renvoyée par le serveur : permet de reproduire exactement l'image
+    const entry = { result, request: { ...request, seed: result.seed }, notices };
+    history.unshift(entry);
     history.length = Math.min(history.length, 12);
-    els.galleryGrid.innerHTML = "";
-    history.forEach((src) => {
-      const img = document.createElement("img");
-      img.src = src;
-      els.galleryGrid.appendChild(img);
-    });
+    showEntry(entry);
   }
 
   function renderError(message) {
@@ -219,6 +250,7 @@
     // jusqu'au prochain succès
     last = null;
     clearResultDetails();
+    renderHistory(); // plus aucune miniature « affichée »
     // textContent : le message vient du serveur, on ne l'interprète pas en HTML
     const box = document.createElement("div");
     box.className = "canvas-placeholder";
@@ -301,12 +333,19 @@
   els.regenBtn.addEventListener("click", () => {
     if (last) doGenerate({ ...last.request });
   });
+  // nom de fichier honnête : « rapide », « ia » si Gemini a rendu l'image,
+  // « procedural » si une demande de rendu IA est retombée sur le procédural
+  function fileModeLabel(result) {
+    if (result.engine === "gan") return "rapide";
+    return result.source === "gemini" ? "ia" : "procedural";
+  }
+
   els.downloadBtn.addEventListener("click", () => {
     if (!last) return;
-    const { category, engine, seed } = last.request;
+    const { category, seed } = last.request;
     const a = document.createElement("a");
-    a.href = last.image;
-    a.download = `zakhrafaai_${category}_${engine}_${seed}.png`;
+    a.href = last.result.image;
+    a.download = `zakhrafaai_${category}_${fileModeLabel(last.result)}_${seed}.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();

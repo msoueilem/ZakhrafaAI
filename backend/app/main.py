@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import random
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, List, Optional
 
@@ -23,6 +24,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.generators.utils import PALETTE_LABELS, PALETTES
+from app.routers import assist
 from app.services import engine, gemini
 
 APP_DIR = Path(__file__).resolve().parent
@@ -46,6 +48,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# assistant de prompt DeepSeek (/api/assist/*)
+app.include_router(assist.router)
 
 
 MAX_SEED = 2**53 - 1
@@ -88,7 +93,8 @@ class HistoryItem(BaseModel):
     id: str
     category: str
     engine: str
-    date: str
+    source: str  # procedural | gemini | trained_weights
+    date: str  # ISO 8601 UTC, ex. « 2026-10-23T01:33:00Z »
 
 
 # ---------------------------------------------------------------------------
@@ -157,11 +163,13 @@ def generate(req: GenerateRequest, request: Request):
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    # date en UTC explicite : le tableau de bord l'affiche à l'heure locale du navigateur
     entry = {
         "id": f"{req.category}_{int(time.time() * 1000)}_{random.randint(100,999)}",
         "category": req.category,
         "engine": req.engine,
-        "date": time.strftime("%Y-%m-%d %H:%M"),
+        "source": result.source,
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
     _HISTORY.insert(0, entry)
     del _HISTORY[50:]
@@ -172,12 +180,21 @@ def generate(req: GenerateRequest, request: Request):
 @app.get("/api/dashboard")
 def dashboard():
     counts = {"zellige": 0, "tapis": 0, "broderie": 0}
+    engines = {"gan": 0, "diffusion": 0}
+    # source réelle : en rendu IA, « procedural » signifie un repli
+    sources = {"procedural": 0, "gemini": 0, "trained_weights": 0}
     for h in _HISTORY:
         if h["category"] in counts:
             counts[h["category"]] += 1
+        if h["engine"] in engines:
+            engines[h["engine"]] += 1
+        if h["source"] in sources:
+            sources[h["source"]] += 1
     return {
         "total_motifs": len(_HISTORY),
         "repartition_par_categorie": counts,
+        "repartition_par_moteur": engines,
+        "repartition_par_source": sources,
         "derniers_motifs": _HISTORY[:8],
     }
 

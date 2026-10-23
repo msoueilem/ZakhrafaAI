@@ -189,8 +189,10 @@ tr:last-child td{ border-bottom:none; }
   border:1px dashed var(--line); border-radius:10px; position:relative; overflow:hidden;
 }
 .canvas-wrap img{ max-width:100%; max-height:520px; border-radius:6px; box-shadow:var(--shadow-lift); }
-.canvas-placeholder{ text-align:center; color:var(--muted); font-size:0.9rem; }
-.canvas-placeholder svg{ margin:0 auto 12px; opacity:0.5; }
+.canvas-placeholder{ max-width:340px; padding:24px 16px; text-align:center; color:var(--muted); font-size:0.9rem; }
+.canvas-placeholder p{ margin:0; color:inherit; }
+/* bloc : centré au-dessus du texte (en ligne, l'étoile s'alignait sur la ligne de base) */
+.canvas-placeholder svg{ display:block; margin:0 auto 12px; opacity:0.5; }
 
 .meta-row{ display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; font-family:var(--font-mono); font-size:0.78rem; color:var(--muted); }
 .meta-row b{ color:var(--gold-soft); }
@@ -203,7 +205,11 @@ tr:last-child td{ border-bottom:none; }
 .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
 
 .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:10px; margin-top:16px; }
-.gallery-grid img{ border-radius:6px; border:1px solid var(--line); aspect-ratio:1; object-fit:cover; }
+.gallery-item{ display:block; padding:0; background:none; border:2px solid transparent; border-radius:8px; }
+.gallery-item:hover{ border-color:var(--gold); }
+.gallery-item:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.gallery-item[aria-current="true"]{ border-color:var(--gold-soft); }
+.gallery-grid img{ width:100%; border-radius:6px; border:1px solid var(--line); aspect-ratio:1; object-fit:cover; }
 
 .loading-shimmer{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:var(--muted); font-size:0.85rem;}
 .spinner{ width:34px; height:34px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--gold); animation:spin 0.9s linear infinite; }
@@ -219,9 +225,9 @@ tr:last-child td{ border-bottom:none; }
 .bar-track{ flex:1; height:10px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
 .bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-soft)); }
 .history-list{ display:flex; flex-direction:column; gap:0; }
-.history-row{ display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line); font-size:0.9rem; }
+.history-row{ display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); font-size:0.9rem; }
 .history-row:last-child{ border-bottom:none; }
-.history-row .cat{ font-weight:600; text-transform:capitalize; }
+.history-row .cat{ font-weight:600; }
 .history-row .when{ color:var(--muted); font-family:var(--font-mono); font-size:0.8rem; }
 .empty-state{ text-align:center; padding:40px 20px; color:var(--muted); }
 .empty-state a{ color:var(--gold-soft); text-decoration:underline; }
@@ -252,12 +258,20 @@ tr:last-child td{ border-bottom:none; }
   .nav-links a:last-child{ border-bottom:none; }
 }
 
-@media (max-width: 420px){
-  .nav-cta{ display:none; }
-}
-
 @media (max-width: 720px){
   .dash-grid{ grid-template-columns:1fr; }
+}
+
+/* cibles tactiles ≥ 44 px (WCAG 2.5.5) sur écrans tactiles et mises en page étroites */
+@media (pointer: coarse), (max-width: 920px){
+  .segmented button{ min-height:44px; }
+  .nav-cta, .nav-links a{ display:inline-flex; align-items:center; min-height:44px; }
+  .btn{ min-height:44px; }
+}
+
+/* après le bloc tactile : le lien d'appel est dans le menu sur très petit écran */
+@media (max-width: 420px){
+  .nav-cta{ display:none; }
 }
 
 @media (prefers-reduced-motion: reduce){

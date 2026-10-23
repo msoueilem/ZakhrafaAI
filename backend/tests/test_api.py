@@ -172,7 +172,33 @@ def test_dashboard_empty(client):
     data = client.get("/api/dashboard").json()
     assert data["total_motifs"] == 0
     assert data["repartition_par_categorie"] == {"zellige": 0, "tapis": 0, "broderie": 0}
+    assert data["repartition_par_moteur"] == {"gan": 0, "diffusion": 0}
+    assert data["repartition_par_source"] == {"procedural": 0, "gemini": 0, "trained_weights": 0}
     assert data["derniers_motifs"] == []
+
+
+def test_dashboard_dates_are_iso_utc(client):
+    import re
+    from datetime import datetime, timezone
+
+    before = datetime.now(timezone.utc).replace(microsecond=0)
+    gen(client, seed=1)
+    after = datetime.now(timezone.utc)
+    date = client.get("/api/dashboard").json()["derniers_motifs"][0]["date"]
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", date), date
+    parsed = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    assert before <= parsed <= after
+
+
+def test_dashboard_breakdown_by_engine_and_source(client):
+    gen(client, engine="gan", seed=1)
+    gen(client, engine="gan", seed=2)
+    gen(client, engine="diffusion", seed=3)  # sans clé : repli procédural
+    data = client.get("/api/dashboard").json()
+    assert data["repartition_par_moteur"] == {"gan": 2, "diffusion": 1}
+    assert data["repartition_par_source"] == {"procedural": 3, "gemini": 0, "trained_weights": 0}
+    latest = data["derniers_motifs"][0]
+    assert (latest["engine"], latest["source"]) == ("diffusion", "procedural")
 
 
 def test_dashboard_counts(client):
