@@ -33,6 +33,26 @@ def test_meta_lists_categories_engines_palettes(client):
     assert {p["id"] for p in data["palettes"]} == set(engine.VALID_PALETTES)
 
 
+def test_meta_exposes_palette_colors_and_labels(client):
+    palettes = client.get("/api/meta").json()["palettes"]
+    for p in palettes:
+        assert p["colors"] == utils.PALETTES[p["id"]]
+        assert p["label"] and p["label"] != p["id"]
+
+
+@pytest.mark.parametrize("category", CATEGORIES)
+@pytest.mark.parametrize("engine_id", list(ENGINES))
+def test_ivory_palette_is_light(category, engine_id):
+    """« Ivoire » doit donner un motif clair dans toutes les catégories :
+    le fond (palette[-1], palette[0] ou palette[2] selon le générateur)
+    était auparavant quasi noir (#111111)."""
+    for seed in range(5):
+        params = utils.GenParams(category=category, engine=engine_id, palette="monochrome_ivoire",
+                                 seed=seed, size=256)
+        lum = np.asarray(engine.GENERATORS[category].generate(params).convert("L")).mean()
+        assert lum > 150, (seed, lum)
+
+
 # --- génération -------------------------------------------------------------
 
 @pytest.mark.parametrize("category", CATEGORIES)

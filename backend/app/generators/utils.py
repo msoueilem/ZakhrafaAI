@@ -43,7 +43,20 @@ PALETTES = {
     "terracotta": ["#B5533C", "#E0A96D", "#3E2723", "#F2E9D8", "#2E7D5B"],
     "emeraude": ["#04471C", "#2E7D5B", "#F2E9D8", "#C9A227", "#0F2A3D"],
     "berbere": ["#7A1E2B", "#C9A227", "#3E2723", "#E0A96D", "#0F2A3D"],
-    "monochrome_ivoire": ["#2B2B2B", "#5C5C5C", "#F2E9D8", "#8C8C8C", "#111111"],
+    # Le fond dépend de la position : palette[-1] (zellige, broderie rapide),
+    # palette[0] (tapis), palette[2] (broderie rendu IA). Ces trois positions
+    # sont donc des ivoires/sables, les gris foncés servent d'encres et de joints.
+    "monochrome_ivoire": ["#F2E9D8", "#5C5C5C", "#D8CBB0", "#2B2B2B", "#F2E9D8"],
+}
+
+# Libellés affichés par l'interface (exposés avec les couleurs par /api/meta)
+PALETTE_LABELS = {
+    "fes_bleu": "Bleu de Fès",
+    "zellige_classique": "Zellige classique",
+    "terracotta": "Terracotta",
+    "emeraude": "Émeraude",
+    "berbere": "Berbère",
+    "monochrome_ivoire": "Ivoire",
 }
 
 DEFAULT_PALETTE = "zellige_classique"

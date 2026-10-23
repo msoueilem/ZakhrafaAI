@@ -1,12 +1,7 @@
 (() => {
-  const PALETTES = [
-    { id: "fes_bleu", label: "Bleu de Fès", color: "#0B3D5C" },
-    { id: "zellige_classique", label: "Zellige classique", color: "#01BAEF" },
-    { id: "terracotta", label: "Terracotta", color: "#B5533C" },
-    { id: "emeraude", label: "Émeraude", color: "#2E7D5B" },
-    { id: "berbere", label: "Berbère", color: "#7A1E2B" },
-    { id: "monochrome_ivoire", label: "Ivoire", color: "#8C8C8C" },
-  ];
+  // palettes (id, libellé, couleurs réelles) chargées depuis /api/meta :
+  // les couleurs ne sont définies que côté serveur (generators/utils.py)
+  let palettes = [];
 
   const state = {
     category: "zellige",
@@ -50,14 +45,33 @@
   const history = [];
 
   function renderPalettes() {
-    els.paletteSwatches.innerHTML = "";
-    PALETTES.forEach((p) => {
+    els.paletteSwatches.replaceChildren();
+    if (!palettes.length) {
+      const msg = document.createElement("small");
+      msg.className = "field-hint";
+      msg.textContent = "Palettes indisponibles : la palette par défaut sera utilisée.";
+      els.paletteSwatches.appendChild(msg);
+      return;
+    }
+    palettes.forEach((p) => {
+      const active = p.id === state.palette;
       const btn = document.createElement("button");
-      btn.className = "swatch" + (p.id === state.palette ? " active" : "");
-      btn.style.background = p.color;
-      btn.style.border = p.id === state.palette ? "2px solid var(--gold-soft)" : "2px solid transparent";
-      btn.title = p.label;
-      btn.setAttribute("aria-label", p.label);
+      btn.type = "button";
+      btn.className = "swatch" + (active ? " active" : "");
+      btn.setAttribute("aria-pressed", String(active));
+      // bande multicolore : les vraies couleurs de la palette, dans l'ordre
+      const strip = document.createElement("span");
+      strip.className = "swatch-strip";
+      strip.setAttribute("aria-hidden", "true");
+      (p.colors || []).forEach((c) => {
+        const stop = document.createElement("span");
+        stop.style.background = c;
+        strip.appendChild(stop);
+      });
+      const label = document.createElement("span");
+      label.className = "swatch-label";
+      label.textContent = p.label;
+      btn.append(strip, label);
       btn.addEventListener("click", () => {
         state.palette = p.id;
         renderPalettes();
@@ -94,13 +108,22 @@
     }
   }
 
+  // /api/meta : état du rendu IA (quota) et, au premier chargement, palettes
   async function refreshAI() {
+    let meta = null;
     try {
-      ai = (await ZakhrafaAPI.meta()).ai || null;
+      meta = await ZakhrafaAPI.meta();
     } catch (_) {
-      ai = null;
+      meta = null;
     }
+    ai = (meta && meta.ai) || null;
     renderEngineHint();
+    if (!palettes.length && meta && Array.isArray(meta.palettes)) {
+      palettes = meta.palettes;
+      renderPalettes();
+    } else if (!meta && !palettes.length) {
+      renderPalettes();
+    }
   }
 
   function updatePromptCount() {
@@ -246,7 +269,6 @@
   wireSegmented(els.categorySeg, "category");
   wireSegmented(els.engineSeg, "engine", renderEngineHint);
   els.promptInput.addEventListener("input", updatePromptCount);
-  renderPalettes();
   updatePromptCount();
   refreshAI();
 })();

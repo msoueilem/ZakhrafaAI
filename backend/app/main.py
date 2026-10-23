@@ -22,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
+from app.generators.utils import PALETTE_LABELS, PALETTES
 from app.services import engine, gemini
 
 APP_DIR = Path(__file__).resolve().parent
@@ -118,13 +119,11 @@ def meta():
         ],
         # état du rendu IA (la clé n'est jamais exposée)
         "ai": gemini.get_renderer().status(),
+        # couleurs réelles (source unique : generators/utils.PALETTES) pour
+        # afficher chaque palette telle qu'elle sera rendue
         "palettes": [
-            {"id": "fes_bleu", "label": "Bleu de Fès"},
-            {"id": "zellige_classique", "label": "Zellige classique"},
-            {"id": "terracotta", "label": "Terracotta"},
-            {"id": "emeraude", "label": "Émeraude"},
-            {"id": "berbere", "label": "Berbère"},
-            {"id": "monochrome_ivoire", "label": "Monochrome ivoire"},
+            {"id": pid, "label": PALETTE_LABELS.get(pid, pid), "colors": colors}
+            for pid, colors in PALETTES.items()
         ],
     }
 

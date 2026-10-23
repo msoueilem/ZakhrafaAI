@@ -168,9 +168,16 @@ tr:last-child td{ border-bottom:none; }
 .segmented button:last-child{ border-right:none; }
 .segmented button.active{ background:var(--gold); color:#1c1404; font-weight:600; }
 .palette-swatches{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.swatch{ height:44px; border-radius:6px; border:2px solid transparent; position:relative; }
-.swatch.active{ border-color:var(--gold-soft); }
-.swatch span{ position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:0.66rem; color:var(--muted); }
+.swatch{
+  display:flex; flex-direction:column; gap:6px; min-height:44px; padding:4px 4px 6px;
+  background:rgba(0,0,0,0.2); border-radius:6px; border:2px solid var(--line); color:var(--muted);
+}
+.swatch:hover{ border-color:var(--gold); }
+.swatch.active{ border-color:var(--gold-soft); color:var(--ivory); }
+.swatch:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+.swatch-strip{ display:flex; height:26px; border-radius:3px; overflow:hidden; }
+.swatch-strip span{ flex:1; }
+.swatch-label{ font-size:0.74rem; line-height:1.2; text-align:center; }
 
 .canvas-wrap{
   display:flex; align-items:center; justify-content:center; min-height:420px;
