@@ -1,11 +1,22 @@
 # ZakhrafaAI — Génération de motifs artisanaux marocains par IA
 
+> **Note d'honnêteté.** Toutes les images produites par cette application
+> viennent d'un **générateur procédural** (`backend/app/generators/`), pas
+> d'un modèle entraîné. Les modes `gan` et `diffusion` de l'API désignent un
+> rendu *rapide* (256 px) et *détaillé* (768 px) du même générateur. Le GAN
+> conditionnel (`models/gan.py`) n'est utilisé que si vous fournissez des
+> poids entraînés ; le pipeline Stable Diffusion (`models/diffusion.py`) est
+> un point d'intégration non branché.
+
 Application web construite à partir du rapport *ZakhrafaAI : Génération de
 Motifs Artisanaux par Intelligence Artificielle* (AIDS, FST Tanger).
 Elle génère des motifs de **zellige**, **tapis** et **broderie** avec deux
-moteurs — un mode **GAN** (rapide, ~256×256) et un mode **Diffusion**
-(qualité supérieure, ~768×768) — via une API **FastAPI** et une interface
-web (tableau de bord + atelier de réglages), comme décrit au §7 du rapport.
+modes de rendu — **rapide** (id `gan`, ~256×256) et **détaillé** (id
+`diffusion`, ~768×768), qui reprennent les résolutions du GAN et du modèle
+de diffusion du rapport — via une API **FastAPI** et une interface web
+(tableau de bord + atelier de réglages), comme décrit au §7 du rapport.
+La seed fixe à la fois la composition (structure du motif) et les couleurs :
+une même seed reproduit exactement la même image.
 
 ## Démarrage rapide
 
@@ -74,8 +85,8 @@ cp gan_tapis_final.pth backend/weights/
 cp gan_broderie_final.pth backend/weights/
 ```
 Au prochain démarrage, l'API détecte automatiquement les poids et les
-utilise pour le mode GAN (repli silencieux sur le générateur procédural en
-cas d'erreur de chargement). Pour la diffusion, voir
+utilise pour le mode `gan` (sortie 64×64 agrandie à 256 px par défaut ; repli
+journalisé sur le générateur procédural en cas d'erreur de chargement). Pour la diffusion, voir
 `build_pipeline()` dans `diffusion.py`.
 
 ## Structure du projet
@@ -108,7 +119,7 @@ zakhrafaai/
 | GET     | `/api/health`     | statut du service                              |
 | GET     | `/api/meta`       | catégories, moteurs et palettes disponibles    |
 | POST    | `/api/generate`   | génère une image (voir corps ci-dessous)       |
-| GET     | `/api/dashboard`  | statistiques de la session en cours            |
+| GET     | `/api/dashboard`  | statistiques globales du serveur (en mémoire)  |
 
 Corps de `POST /api/generate` :
 ```json

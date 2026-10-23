@@ -5,7 +5,7 @@ Endpoints :
   GET  /api/health                 -> statut du service
   GET  /api/meta                   -> catégories / palettes / moteurs disponibles
   POST /api/generate               -> génère une image (voir GenerateRequest)
-  GET  /api/dashboard              -> statistiques utilisateur (mock, cf. §7 tableau de bord)
+  GET  /api/dashboard              -> statistiques globales du serveur (en mémoire, cf. §7)
 
 Sert aussi le frontend statique (frontend/static) à la racine "/".
 """
@@ -53,7 +53,7 @@ app.add_middleware(
 
 class GenerateRequest(BaseModel):
     category: str = Field(..., description="zellige | tapis | broderie")
-    engine: str = Field("gan", description="gan | diffusion")
+    engine: str = Field("gan", description="gan (rapide, 256px) | diffusion (détaillé, 768px) — rendu procédural sauf poids GAN fournis")
     palette: str = Field("zellige_classique")
     seed: Optional[int] = Field(None, description="graine aléatoire (bruit z); aléatoire si absente")
     size: Optional[int] = Field(None, description="taille de sortie en pixels (128-1024)")
@@ -101,8 +101,10 @@ def meta():
             {"id": "broderie", "label": "Broderie", "complexity": "Moyenne"},
         ],
         "engines": [
-            {"id": "gan", "label": "GAN (rapide)", "default_resolution": 256},
-            {"id": "diffusion", "label": "Diffusion (haute qualité)", "default_resolution": 768},
+            # ids historiques conservés pour compatibilité ; le rendu est
+            # procédural tant qu'aucun poids entraîné n'est branché.
+            {"id": "gan", "label": "Rapide (256px)", "default_resolution": 256},
+            {"id": "diffusion", "label": "Détaillé (768px)", "default_resolution": 768},
         ],
         "palettes": [
             {"id": "fes_bleu", "label": "Bleu de Fès"},

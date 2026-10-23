@@ -1,5 +1,7 @@
 (() => {
   const CAT_LABELS = { zellige: "Zellige", tapis: "Tapis", broderie: "Broderie" };
+  // ids d'API conservés (gan / diffusion), libellés honnêtes côté interface
+  const ENGINE_LABELS = { gan: "Rapide", diffusion: "Détaillé" };
 
   async function load() {
     try {
@@ -32,7 +34,7 @@
         data.derniers_motifs.forEach((h) => {
           const row = document.createElement("div");
           row.className = "history-row";
-          row.innerHTML = `<span class="cat">${CAT_LABELS[h.category] || h.category} · ${h.engine.toUpperCase()}</span><span class="when">${h.date}</span>`;
+          row.innerHTML = `<span class="cat">${CAT_LABELS[h.category] || h.category} · ${ENGINE_LABELS[h.engine] || h.engine}</span><span class="when">${h.date}</span>`;
           historyList.appendChild(row);
         });
       }

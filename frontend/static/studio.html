@@ -32,7 +32,7 @@
     <div class="section-head">
       <div class="eyebrow">Atelier de réglages</div>
       <h2>Générer un motif artisanal</h2>
-      <p>Choisissez une catégorie, un moteur génératif et une palette culturelle. Chaque génération utilise un nouveau bruit aléatoire (seed) sauf si vous en fixez un — utile pour reproduire un résultat.</p>
+      <p>Choisissez une catégorie, un mode de rendu et une palette culturelle. Chaque génération utilise une nouvelle seed (qui fixe la composition et les couleurs) sauf si vous en fixez une — utile pour reproduire un résultat.</p>
     </div>
 
     <div class="studio-grid">
@@ -78,10 +78,10 @@
         </div>
 
         <div class="field">
-          <label>Moteur génératif</label>
+          <label>Mode de rendu</label>
           <div class="segmented" id="engineSeg">
-            <button data-value="gan" class="active">GAN (rapide)</button>
-            <button data-value="diffusion">Diffusion (qualité)</button>
+            <button data-value="gan" class="active">Rapide (256px)</button>
+            <button data-value="diffusion">Détaillé (768px)</button>
           </div>
         </div>
 
@@ -102,9 +102,11 @@
 
         <button class="btn btn-primary btn-block" id="generateBtn">Générer le motif</button>
         <p style="font-size:0.78rem; margin-top:12px;">
-          Le mode GAN cible ~256×256 pour un rendu rapide ; le mode Diffusion
-          cible 768×768 pour un rendu plus détaillé, conformément aux résolutions
-          utilisées dans le projet.
+          Les motifs sont produits par un <b>générateur procédural</b>
+          (géométrie + palettes), pas par un modèle entraîné. Le mode rapide
+          cible 256×256 et le mode détaillé 768×768, comme le GAN et le modèle
+          de diffusion prévus dans le rapport ; ces modèles peuvent être branchés
+          à la place du générateur dès que des poids entraînés sont fournis.
         </p>
       </div>
     </div>
