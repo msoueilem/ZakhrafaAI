@@ -35,10 +35,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Le frontend est servi par la même origine : CORS n'est utile que pour
+# appeler l'API depuis un autre site. Ouvert, mais sans cookies/identifiants
+# (« * » + credentials est refusé par les navigateurs et serait dangereux).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
