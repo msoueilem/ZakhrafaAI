@@ -258,12 +258,20 @@ tr:last-child td{ border-bottom:none; }
   .nav-links a:last-child{ border-bottom:none; }
 }
 
-@media (max-width: 420px){
-  .nav-cta{ display:none; }
-}
-
 @media (max-width: 720px){
   .dash-grid{ grid-template-columns:1fr; }
+}
+
+/* cibles tactiles ≥ 44 px (WCAG 2.5.5) sur écrans tactiles et mises en page étroites */
+@media (pointer: coarse), (max-width: 920px){
+  .segmented button{ min-height:44px; }
+  .nav-cta, .nav-links a{ display:inline-flex; align-items:center; min-height:44px; }
+  .btn{ min-height:44px; }
+}
+
+/* après le bloc tactile : le lien d'appel est dans le menu sur très petit écran */
+@media (max-width: 420px){
+  .nav-cta{ display:none; }
 }
 
 @media (prefers-reduced-motion: reduce){
