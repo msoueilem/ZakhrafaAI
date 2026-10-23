@@ -66,5 +66,6 @@
   "error.validation.palette": "Palette inconnue.",
   "common.loading": "Chargement…",
   "common.close": "Fermer",
-  "common.optional": "optionnel"
+  "common.optional": "optionnel",
+  "common.just_now": "à l'instant"
 }

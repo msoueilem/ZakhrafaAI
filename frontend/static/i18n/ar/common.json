@@ -66,5 +66,6 @@
   "error.validation.palette": "لوحة ألوان غير معروفة.",
   "common.loading": "جارٍ التحميل…",
   "common.close": "إغلاق",
-  "common.optional": "اختياري"
+  "common.optional": "اختياري",
+  "common.just_now": "الآن"
 }

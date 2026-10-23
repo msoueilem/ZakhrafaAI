@@ -6,9 +6,9 @@
  *
  * Attributs reconnus par apply(root) :
  *   data-i18n="key"                     -> textContent
- *   data-i18n-html="key"                -> innerHTML (UNIQUEMENT nos JSON, jamais de donnée utilisateur/API)
  *   data-i18n-attr="placeholder:key;aria-label:key;title:key;content:key"
- *   data-i18n-params='{"n":3}'          -> paramètres d'interpolation pour les 3 précédents
+ *   data-i18n-params='{"n":3}'          -> paramètres d'interpolation pour les 2 précédents
+ * Pas d'injection HTML : tout passe par textContent / setAttribute.
  * <title data-i18n="meta.studio.title"> et <meta name="description" data-i18n-attr="content:…">
  * fonctionnent tels quels (apply() parcourt tout le document, <head> compris).
  */
@@ -27,6 +27,7 @@ const dicts = {};          // { fr: {...}, ar: {...} } — fusion common + page
 const loaded = new Set();  // "fr/common", "ar/studio"…
 let page = null;
 let current = DEFAULT_LANG;
+let langSeq = 0;           // jeton de setLang : seul le dernier appel s'applique
 let storageOk = true;
 const warned = new Set();
 
@@ -117,7 +118,6 @@ export function apply(root = document) {
     return list;
   };
   for (const el of all("[data-i18n]")) el.textContent = t(el.dataset.i18n, paramsOf(el));
-  for (const el of all("[data-i18n-html]")) el.innerHTML = t(el.dataset.i18nHtml, paramsOf(el));
   for (const el of all("[data-i18n-attr]")) {
     const params = paramsOf(el);
     for (const pair of el.dataset.i18nAttr.split(";")) {
@@ -155,6 +155,7 @@ export async function initI18n(pageName) {
 /** Change de langue sans recharger : DOM, <html lang dir>, ?lang=, stockage, événement i18n:change. */
 export async function setLang(lang) {
   lang = pick(lang) || DEFAULT_LANG;
+  const token = ++langSeq;
   writeStorage(lang);
   try {
     const url = new URL(location.href);
@@ -163,6 +164,8 @@ export async function setLang(lang) {
   } catch { /* ignore */ }
   if (lang === current && loaded.has(`${lang}/common`)) return lang;
   await loadLang(lang);
+  // un setLang() plus récent a été lancé pendant le chargement (ex. ar lent puis fr rapide) : on l'ignore
+  if (token !== langSeq) return current;
   current = lang;
   setDocumentLang(lang);
   apply(document);
@@ -210,14 +213,19 @@ export function formatTime(d, opts = { hour: "2-digit", minute: "2-digit" }) {
   return new Intl.DateTimeFormat(LOCALES[current], opts).format(d instanceof Date ? d : new Date(d));
 }
 
-/** « il y a 3 min » / « منذ 3 دقائق » / « 3 min ago ». */
+/** « il y a 3 minutes » / « قبل 3 دقائق » / « 3 minutes ago » (passé uniquement).
+ *  Arrondi à l'unité inférieure (90 s -> « 1 minute », jamais « il y a 60 s »).
+ *  Date future (horloge serveur en avance) ou < 5 s : common.just_now. */
 export function formatRelative(d, now = Date.now()) {
-  const diff = ((d instanceof Date ? d : new Date(d)).getTime() - now) / 1000;
-  const rtf = new Intl.RelativeTimeFormat(LOCALES[current], { numeric: "auto", style: "short" });
+  const ms = (d instanceof Date ? d : new Date(d)).getTime();
+  if (!Number.isFinite(ms)) return "";
+  const age = (now - ms) / 1000;
+  if (age < 5) return t("common.just_now");
+  const rtf = new Intl.RelativeTimeFormat(LOCALES[current], { numeric: "auto", style: "long" });
   const steps = [[60, "second"], [60, "minute"], [24, "hour"], [7, "day"], [4.345, "week"], [12, "month"], [Infinity, "year"]];
-  let v = diff;
+  let v = age;
   for (const [size, unit] of steps) {
-    if (Math.abs(v) < size) return rtf.format(Math.round(v), unit);
+    if (v < size) return rtf.format(-Math.max(1, Math.floor(v)), unit);
     v /= size;
   }
   return "";

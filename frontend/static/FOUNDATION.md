@@ -29,12 +29,12 @@ Landing : `initShell({ sectionLinks: [{ href: "#how", key: "nav.how" }, …] })`
 - common : `meta.lang/dir`, `brand.*`, `a11y.*`, `nav.home|studio|dashboard|cta`, `lang.*`, `footer.*`, `badge.*`, `notice.*`, `error.*`, `common.*`, `palette.*`, `category.<id>.name`, `mode.{fast,ai}.{name,tagline}`.
   landing : `meta.index.*`, `nav.how…about`, `hero.* how.* crafts.* complexity.* category.<id>.{desc,image_alt} modes.* mode.*.{speed,cost,…} gallery.* artisan.* about.* faq.*`. studio : `meta.studio.*`, `studio.*`. dashboard : `meta.dashboard.*`, `dashboard.*`.
 - Nouvelle clé : préfixe de la page (`studio.xxx`), clés plates à points, ajoutée en fr+ar+en. Besoin d'une clé commune : la signaler, ne pas l'ajouter.
-- HTML : `data-i18n="k"` (textContent, écrase les enfants : mettre icônes et texte dans des éléments frères), `data-i18n-html="k"` (nos JSON seulement),
-  `data-i18n-attr="placeholder:k;aria-label:k;title:k;alt:k"`, `data-i18n-params='{"n":3}'` (interpolation `{n}`).
+- HTML : `data-i18n="k"` (textContent, écrase les enfants : mettre icônes et texte dans des éléments frères),
+  `data-i18n-attr="placeholder:k;aria-label:k;title:k;alt:k"`, `data-i18n-params='{"n":3}'` (interpolation `{n}`). Aucune injection HTML depuis les JSON.
 - JS : `t(key, params)` (repli fr puis clé) · `has(key)` · `apply(rootEl)` après injection de HTML à attributs · `getLang() isRTL() getLocale()`
-  · `setLang(l)` (sans rechargement, `?lang=`, localStorage `zk.lang`) · `onLangChange(cb)` / événement `document` `i18n:change` {lang,dir,locale} :
+  · `setLang(l)` (sans rechargement, `?lang=`, localStorage `zk.lang` ; seul le dernier appel s'applique si les chargements se croisent) · `onLangChange(cb)` / événement `document` `i18n:change` {lang,dir,locale} :
   **tout texte rendu en JS doit être re-rendu dans ce callback**. Langue : `?lang=` → localStorage → navigator.languages → fr.
-- Formats : `formatNumber`, `formatDate`, `formatTime`, `formatRelative` (« il y a 3 min »). Locale ar = `ar-MA-u-nu-latn` (Maroc, chiffres 0-9
+- Formats : `formatNumber`, `formatDate`, `formatTime`, `formatRelative` (« il y a 3 minutes », passé seulement, arrondi inférieur, futur → `common.just_now`). Locale ar = `ar-MA-u-nu-latn` (Maroc, chiffres 0-9
   comme le contenu ; fr-FR, en-GB). Ne jamais formater une seed avec formatNumber. `ltr(v)` renvoie `<bdi dir="ltr" class="ltr">` pour seed / ID / hex / « 256×256 ».
 
 ## Composants (`css/base.css`)

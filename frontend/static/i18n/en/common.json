@@ -66,5 +66,6 @@
   "error.validation.palette": "Unknown palette.",
   "common.loading": "Loading…",
   "common.close": "Close",
-  "common.optional": "optional"
+  "common.optional": "optional",
+  "common.just_now": "just now"
 }
