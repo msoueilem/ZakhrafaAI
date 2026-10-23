@@ -79,7 +79,7 @@
               </button>
               <button type="button" class="option-card option-card--ai mode-card" role="radio" aria-checked="false" data-value="diffusion">
                 <span class="option-card__title"><span data-icon="sparkle"></span><span data-i18n="studio.mode.ai.label">Rendu IA</span></span>
-                <span class="option-card__meta" data-i18n="studio.mode.ai.meta">~10 s · 1 crédit</span>
+                <span class="option-card__meta" id="mode-ai-meta" data-i18n="studio.mode.ai.meta">~10 s · 1 crédit</span>
               </button>
             </div>
             <div class="mode-info">
@@ -183,6 +183,7 @@
             <span data-icon="alert" data-size="32"></span>
             <p class="stage__error-title" data-i18n="studio.result.error_title">Échec de la génération</p>
             <p id="stage-error-text"></p>
+            <button type="button" class="btn btn--secondary btn--sm" id="stage-retry" hidden><span data-icon="refresh"></span><span data-i18n="error.retry">Réessayer</span></button>
           </div>
         </div>
         <p class="sr-only" id="result-status" role="status" aria-live="polite"></p>
@@ -201,8 +202,8 @@
         <div class="notices" id="notices"></div>
 
         <div class="result__actions">
-          <button type="button" class="btn btn--secondary" id="download" disabled><span data-icon="download"></span><span data-i18n="studio.download">Télécharger le PNG</span></button>
-          <button type="button" class="btn btn--ghost" id="regenerate" disabled data-i18n-attr="title:studio.regenerate.title"><span data-icon="refresh"></span><span data-i18n="studio.regenerate">Régénérer à l'identique</span></button>
+          <button type="button" class="btn btn--secondary" id="download" disabled><span data-icon="download"></span><span class="hide-sm" data-i18n="studio.download">Télécharger le PNG</span><span class="only-sm" data-i18n="studio.download_short">Télécharger</span></button>
+          <button type="button" class="btn btn--ghost" id="regenerate" disabled data-i18n-attr="title:studio.regenerate.title"><span data-icon="refresh"></span><span class="hide-sm" data-i18n="studio.regenerate">Régénérer à l'identique</span><span class="only-sm" data-i18n="studio.regenerate_short">Régénérer</span></button>
         </div>
 
         <details class="about disclosure disclosure--boxed" id="about" hidden>

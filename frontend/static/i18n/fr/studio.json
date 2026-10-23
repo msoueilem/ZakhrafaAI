@@ -98,5 +98,10 @@
   "studio.about.retry": "Réessayer",
   "studio.about.note": "Note rédigée par l'assistant IA, à titre indicatif.",
   "studio.assist.error.assist_ip_limit_wait": "Trop de demandes depuis votre connexion. Réessayez dans {wait}.",
-  "studio.assist.lang_changed": "Langue changée pendant la demande : relancez-la."
+  "studio.assist.lang_changed": "Langue changée pendant la demande : relancez-la.",
+  "studio.mode.ai.meta_none": "Épuisé · Rapide",
+  "studio.mode.ai.hint_none": "Quota IA du jour épuisé : aujourd'hui, ce mode renvoie le motif Rapide (géométrique, gratuit). Remise à zéro à minuit UTC.",
+  "studio.gen.cost_none": "Quota épuisé : motif Rapide aujourd'hui",
+  "studio.download_short": "Télécharger",
+  "studio.regenerate_short": "Régénérer"
 }

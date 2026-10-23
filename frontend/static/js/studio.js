@@ -76,6 +76,8 @@ const el = {
   loadingLabel: $("loading-label"),
   error: $("stage-error"),
   errorText: $("stage-error-text"),
+  retry: $("stage-retry"),
+  modeAiMeta: $("mode-ai-meta"),
   status: $("result-status"),
   badge: $("source-badge"),
   meta: $("meta"),
@@ -104,6 +106,7 @@ const meta = { loaded: false, failed: false, ai: null, assist: null, palettes: [
 let assistDown = false;        // l'API a répondu assist_disabled pendant la session
 let current = null;            // entrée affichée { id, result, request, notices }
 let failure = null;            // descripteur du dernier échec affiché
+let failedRequest = null;      // requête à rejouer avec « Réessayer »
 let pending = null;            // requête en cours
 const history = [];
 let entrySeq = 0;
@@ -147,6 +150,8 @@ function paletteName(id) {
 }
 const aiOn = () => !!(meta.ai && meta.ai.enabled);
 const assistOn = () => !!(meta.assist && meta.assist.enabled);
+/** Rendu IA actif mais quota du jour épuisé : le serveur renverra le motif Rapide. */
+const quotaOut = () => aiOn() && meta.ai.remaining_today != null && Number(meta.ai.remaining_today) <= 0;
 
 function setLabel(btn, key) {
   const lab = btn.querySelector(".js-label");
@@ -261,8 +266,14 @@ function renderMode() {
   if (!isAI) hint = t("studio.mode.fast.hint");
   else if (!meta.loaded) hint = meta.failed ? t("studio.mode.ai.fallback_hint") : t("studio.mode.ai.hint_checking");
   else if (!aiOn()) hint = t("studio.mode.ai.hint_disabled");
+  else if (quotaOut()) hint = t("studio.mode.ai.hint_none");
   else hint = `${t("studio.mode.ai.hint", { model: meta.ai.model || "Gemini" })} ${t("studio.mode.ai.fallback_hint")}`;
   el.modeHint.textContent = hint;
+
+  // carte Rendu IA : coût réel du jour (quota épuisé -> repli Rapide)
+  const metaKey = quotaOut() ? "studio.mode.ai.meta_none" : "studio.mode.ai.meta";
+  el.modeAiMeta.dataset.i18n = metaKey;
+  el.modeAiMeta.textContent = t(metaKey);
 
   // pastille de quota (connue seulement si le rendu IA est actif)
   const n = aiOn() ? meta.ai.remaining_today : null;
@@ -286,7 +297,7 @@ function renderMode() {
   const name = document.createElement("strong");
   name.textContent = t(isAI ? "studio.mode.ai.label" : "studio.mode.fast.label");
   const cost = document.createElement("span");
-  cost.textContent = t(isAI ? "studio.mode.ai.meta" : "studio.mode.fast.meta");
+  cost.textContent = t(!isAI ? "studio.mode.fast.meta" : quotaOut() ? "studio.gen.cost_none" : "studio.mode.ai.meta");
   el.genCost.append(name, cost);
 }
 
@@ -473,6 +484,10 @@ el.form.addEventListener("submit", (e) => {
   if (req) generate(req);
 });
 
+el.retry.addEventListener("click", () => {
+  if (failedRequest && !pending) generate({ ...failedRequest });
+});
+
 el.regenerate.addEventListener("click", () => {
   if (current && !pending) generate({ ...current.request });
 });
@@ -484,7 +499,7 @@ async function generate(request) {
   pending = null;
   endLoading();
   if (r.ok && r.data && typeof r.data === "object" && r.data.image) onSuccess(r.data, request);
-  else if (r.code !== "aborted") onFailure(r);
+  else if (r.code !== "aborted") onFailure(r, request);
   // succès ou échec : le serveur a pu décompter un rendu IA, on relit le quota
   if (request.engine === "diffusion") refreshMeta();
 }
@@ -630,7 +645,7 @@ const FIELD_ERROR_KEYS = {
   palette: { key: "error.validation.palette" },
 };
 
-function onFailure(r) {
+function onFailure(r, request) {
   current = null;
   clearResultDetails();
   let desc = errorDesc(r);
@@ -645,6 +660,9 @@ function onFailure(r) {
     for (const f of known) if (f === "category") flash(document.getElementById("group-craft"));
   }
   failure = desc;
+  // « Réessayer » rejoue la même requête, sauf erreur de saisie (elle échouerait à l'identique)
+  failedRequest = r.code === "validation" || r.status === 422 ? null : request;
+  el.retry.hidden = !failedRequest;
   el.img.hidden = true;
   el.empty.hidden = true;
   el.error.hidden = false;

@@ -14,7 +14,7 @@
   "studio.step.advanced": "5. إعدادات متقدمة",
   "studio.mode.fast.label": "سريع",
   "studio.mode.fast.hint": "فوري ومجاني: زخرفة هندسية إجرائية (256 بكسل).",
-  "studio.mode.ai.label": "عرض بالذكاء الاصطناعي",
+  "studio.mode.ai.label": "ذكاء اصطناعي",
   "studio.mode.ai.hint": "يعيد Google Gemini ({model}) رسم الشكل الهندسي بدقة 768 بكسل، في نحو 10 إلى 30 ثانية.",
   "studio.mode.ai.hint_checking": "جارٍ التحقق من توفر العرض بالذكاء الاصطناعي…",
   "studio.mode.ai.hint_disabled": "العرض بالذكاء الاصطناعي غير متاح حاليًا: سيُرجع هذا النمط الزخرفة الهندسية بدقة 768 بكسل.",
@@ -98,5 +98,10 @@
   "studio.about.retry": "إعادة المحاولة",
   "studio.about.note": "نبذة كتبها المساعد الذكي، للاستئناس فقط.",
   "studio.assist.error.assist_ip_limit_wait": "طلبات كثيرة من اتصالك. أعد المحاولة بعد {wait}.",
-  "studio.assist.lang_changed": "تغيّرت اللغة أثناء الطلب، أعِد إرساله."
+  "studio.assist.lang_changed": "تغيّرت اللغة أثناء الطلب، أعِد إرساله.",
+  "studio.mode.ai.meta_none": "نفدت · سريع",
+  "studio.mode.ai.hint_none": "نفدت حصة اليوم من العروض بالذكاء الاصطناعي: سيُرجع هذا النمط اليوم زخرفة النمط السريع (هندسية ومجانية). تتجدد الحصة عند منتصف الليل (UTC).",
+  "studio.gen.cost_none": "نفدت الحصة: زخرفة سريعة اليوم",
+  "studio.download_short": "تنزيل",
+  "studio.regenerate_short": "أعِد التوليد"
 }

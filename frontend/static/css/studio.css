@@ -81,6 +81,11 @@
 .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .mode-card { padding: var(--sp-3) var(--sp-4); padding-inline-end: var(--sp-8); }
 .mode-card .option-card__meta { font-size: var(--fs-xs); }
+@media (max-width: 419.98px) {
+  /* téléphone : cartes empilées, titre et coût sur une ligne chacun (plus de retour à la ligne) */
+  .mode-grid { grid-template-columns: minmax(0, 1fr); }
+  .mode-card { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-1) var(--sp-3); }
+}
 .option-card--ai:not([aria-checked="true"]) { border-color: rgb(157 143 255 / 0.28); }
 .mode-info { display: grid; gap: var(--sp-2); justify-items: start; }
 .quota { white-space: normal; }
@@ -216,6 +221,7 @@
 .stage__error { color: var(--text-2); }
 .stage__error [data-icon] { color: var(--danger); }
 .stage__error-title { color: var(--danger); font-weight: var(--fw-semibold); }
+.stage__error .btn [data-icon] { color: inherit; }
 
 /* Chargement : le treillis s'illumine (bande lumineuse masquée par ornament.svg) */
 .stage__shimmer {
