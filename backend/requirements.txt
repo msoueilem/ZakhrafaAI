@@ -1,7 +1,8 @@
 # ZakhrafaAI — dépendances backend (mode par défaut : générateur procédural)
-fastapi==0.115.6
-uvicorn[standard]==0.32.1
-pydantic==2.10.3
-Pillow==11.0.0
-numpy==2.2.0
-python-multipart==0.0.20
+# Bornes inférieures plutôt que versions figées : les anciennes versions
+# exactes (pydantic-core notamment) ne compilent pas sur les Python récents.
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.10
+Pillow>=11
+numpy>=2.1

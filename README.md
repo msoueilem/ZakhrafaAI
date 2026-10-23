@@ -9,7 +9,10 @@ web (tableau de bord + atelier de réglages), comme décrit au §7 du rapport.
 
 ## Démarrage rapide
 
-**Prérequis :** Python 3.10+.
+**Prérequis :** Python 3.10+ (testé avec Python 3.12). Les dépendances
+sont déclarées avec des bornes inférieures (`fastapi>=0.115`, `pydantic>=2.10`,
+`Pillow>=11`, `numpy>=2.1`…) afin de s'installer sur les versions récentes
+de Python.
 
 ### macOS / Linux
 ```bash
