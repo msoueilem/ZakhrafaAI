@@ -8,8 +8,13 @@ Endpoints :
   GET  /api/dashboard              -> statistiques globales du serveur (en mémoire, cf. §7)
 
 Erreurs de validation (422, toutes routes) : `{"detail": ..., "code": "validation",
-"fields": [noms des champs en cause]}` — `detail` reste la liste FastAPI standard
-(ou un message pour les erreurs métier de /api/generate).
+"fields": [noms des champs en cause]}` — `detail` reste la liste FastAPI
+standard réduite à `loc`, `msg`, `type` (sans `input` ni `ctx`, qui
+renverraient la saisie au client), ou un message pour les erreurs métier de
+/api/generate.
+
+Corps de requête > 64 Ko sur /api/* : 413 `{"code": "payload_too_large"}`
+(Content-Length vérifié d'emblée, corps en flux plafonné à la lecture).
 
 Sert aussi le frontend statique (frontend/static) à la racine "/".
 """
@@ -53,6 +58,79 @@ app = FastAPI(
 # Le frontend est servi par la même origine : CORS n'est utile que pour
 # appeler l'API depuis un autre site. Ouvert, mais sans cookies/identifiants
 # (« * » + credentials est refusé par les navigateurs et serait dangereux).
+# ---------------------------------------------------------------------------
+# Taille maximale des corps de requête (/api/*)
+# ---------------------------------------------------------------------------
+
+MAX_BODY_BYTES = 64 * 1024
+PAYLOAD_TOO_LARGE = {"code": "payload_too_large"}
+
+
+class PayloadTooLarge(HTTPException):
+    def __init__(self) -> None:
+        super().__init__(status_code=413, detail="payload_too_large")
+
+
+class BodySizeLimitMiddleware:
+    """Middleware ASGI : refuse en 413 un corps de plus de `max_bytes` sur
+    /api/*. Content-Length est vérifié avant d'appeler l'application ; un
+    corps en flux (chunked) est compté à la lecture et interrompu dès le
+    dépassement (PayloadTooLarge, traduit en 413 par le gestionnaire)."""
+
+    def __init__(self, app, max_bytes: int = MAX_BODY_BYTES, prefix: str = "/api/"):
+        self.app = app
+        self.max_bytes = max_bytes
+        self.prefix = prefix
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or not scope.get("path", "").startswith(self.prefix):
+            return await self.app(scope, receive, send)
+
+        for name, value in scope.get("headers") or ():
+            if name == b"content-length":
+                try:
+                    too_large = int(value) > self.max_bytes
+                except ValueError:
+                    too_large = False
+                if too_large:
+                    response = JSONResponse(status_code=413, content=PAYLOAD_TOO_LARGE)
+                    return await response(scope, receive, send)
+
+        received = 0
+        started = False
+
+        async def limited_receive():
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise PayloadTooLarge()
+            return message
+
+        async def tracking_send(message):
+            nonlocal started
+            if message["type"] == "http.response.start":
+                started = True
+            await send(message)
+
+        try:
+            await self.app(scope, limited_receive, tracking_send)
+        except PayloadTooLarge:
+            if started:
+                raise
+            response = JSONResponse(status_code=413, content=PAYLOAD_TOO_LARGE)
+            await response(scope, receive, send)
+
+
+@app.exception_handler(PayloadTooLarge)
+async def _on_payload_too_large(request: Request, exc: PayloadTooLarge):
+    return JSONResponse(status_code=413, content=PAYLOAD_TOO_LARGE)
+
+
+# ajouté avant CORS : CORS reste la couche externe (en-têtes sur le 413 aussi)
+app.add_middleware(BodySizeLimitMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -84,6 +162,15 @@ def _fields_from_errors(errors) -> List[str]:
     return fields
 
 
+_ERROR_KEYS = ("loc", "msg", "type")
+
+
+def _public_errors(errors) -> List[dict]:
+    """Erreurs pydantic sans `input` ni `ctx` (ni `url`) : la saisie du client
+    ne lui est jamais renvoyée."""
+    return [{k: err[k] for k in _ERROR_KEYS if k in err} for err in errors]
+
+
 def validation_error(detail: Any, fields: List[str]) -> JSONResponse:
     return JSONResponse(status_code=422, content={
         "detail": jsonable_encoder(detail), "code": "validation", "fields": fields})
@@ -92,7 +179,7 @@ def validation_error(detail: Any, fields: List[str]) -> JSONResponse:
 @app.exception_handler(RequestValidationError)
 async def _on_validation_error(request: Request, exc: RequestValidationError):
     errors = exc.errors()
-    return validation_error(errors, _fields_from_errors(errors))
+    return validation_error(_public_errors(errors), _fields_from_errors(errors))
 
 
 MAX_SEED = 2**53 - 1
