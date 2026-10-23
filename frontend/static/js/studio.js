@@ -125,8 +125,16 @@ function hydrateIcons(root) {
   });
 }
 
-/** Descripteur -> texte. {key, params} | {raw} */
-const tx = (d) => (!d ? "" : d.raw != null ? String(d.raw) : t(d.key, d.params));
+/** Délai en secondes -> « 3 minutes » / « 3 دقائق » / « 45 s » dans la langue active. */
+function formatWait(sec) {
+  const s = Math.max(1, Math.round(sec));
+  const [n, unit] = s < 60 ? [s, "second"] : [Math.ceil(s / 60), "minute"];
+  return formatNumber(n, { style: "unit", unit, unitDisplay: "long" });
+}
+
+/** Descripteur -> texte. {key, params, wait?} | {raw} ; `wait` (s) est formaté au rendu (paramètre {wait}). */
+const tx = (d) => (!d ? "" : d.raw != null ? String(d.raw)
+  : t(d.key, d.wait != null ? { ...d.params, wait: formatWait(d.wait) } : d.params));
 
 const catName = (id) => (has(`category.${id}.name`) ? t(`category.${id}.name`) : id);
 const modeName = (engine) => t(engine === "diffusion" ? "mode.ai.name" : "mode.fast.name");
@@ -702,6 +710,10 @@ function renderAssistAvailability() {
 
 function assistErrorDesc(r) {
   if (r.code === "network") return { key: "error.network" };
+  const limited = r.code === "assist_ip_limit" || (r.code === "http" && r.status === 429);
+  if (limited && Number.isFinite(r.retryAfter) && r.retryAfter > 0) {
+    return { key: "studio.assist.error.assist_ip_limit_wait", wait: r.retryAfter };
+  }
   const k = `studio.assist.error.${r.code}`;
   if (r.code && has(k)) return { key: k };
   if (r.code === "http" && r.status === 429) return { key: "studio.assist.error.assist_ip_limit" };

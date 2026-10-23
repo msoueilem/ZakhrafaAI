@@ -65,5 +65,5 @@ Uniquement transform/opacity. Révélation : classe `.reveal` (+`style="--i:n"` 
 
 ## HTTP (`js/http.js`, remplace `api.js` qui sera retiré)
 `const r = await postJSON("/api/generate", body, { timeout: 90000, signal })` / `getJSON("/api/meta")` → jamais d'exception.
-Succès `{ok:true, data, status}` ; échec `{ok:false, code, status, data, params}`, code ∈ `network` (coupure, délai, corps tronqué) · `aborted` (signal appelant, ne rien afficher)
+Succès `{ok:true, data, status}` ; échec `{ok:false, code, status, data, params, retryAfter}` (`retryAfter` = en-tête Retry-After en secondes, ou null), code ∈ `network` (coupure, délai, corps tronqué) · `aborted` (signal appelant, ne rien afficher)
 · `validation` (422 sans code) · code métier `body.code|detail.code` (→ `error.validation.<code>`) · `http`. `errorMessage(r)` donne le texte traduit. IDs API inchangés : `gan`/`diffusion`.

@@ -96,5 +96,6 @@
   "studio.about.title": "عن هذه الزخرفة",
   "studio.about.loading": "جارٍ تحرير النبذة…",
   "studio.about.retry": "إعادة المحاولة",
-  "studio.about.note": "نبذة كتبها المساعد الذكي، للاستئناس فقط."
+  "studio.about.note": "نبذة كتبها المساعد الذكي، للاستئناس فقط.",
+  "studio.assist.error.assist_ip_limit_wait": "طلبات كثيرة من اتصالك. أعد المحاولة بعد {wait}."
 }

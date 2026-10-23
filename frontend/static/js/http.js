@@ -7,7 +7,7 @@
  *
  * Résultat :
  *   succès : { ok: true,  data, status, code: null }
- *   échec  : { ok: false, data, status, code, params }
+ *   échec  : { ok: false, data, status, code, params, retryAfter }
  *     code = "network"    coupure réseau, délai dépassé ou corps illisible (status 0 si pas de réponse)
  *            "aborted"    annulé par le `signal` de l'appelant (ne rien afficher)
  *            "validation" HTTP 422 (data.detail = détail pydantic/FastAPI)
@@ -15,10 +15,21 @@
  *                         (ex. size_range, seed, prompt_length… -> clé error.validation.<code>)
  *            "http"       toute autre réponse non 2xx
  *     params = body.params ou body.detail.params (pour l'interpolation), sinon {}
+ *     retryAfter = en-tête Retry-After en secondes (entier ≥ 0, ou date HTTP convertie), sinon null
  */
 import { t, has } from "./i18n.js";
 
 const DEFAULT_TIMEOUT = 60000;
+
+/** Retry-After : « 120 » (secondes) ou date HTTP -> secondes entières, sinon null. */
+function parseRetryAfter(res) {
+  const v = res?.headers?.get("Retry-After");
+  if (!v) return null;
+  const s = v.trim();
+  if (/^\d+$/.test(s)) return Number(s);
+  const at = Date.parse(s);
+  return Number.isFinite(at) ? Math.max(0, Math.ceil((at - Date.now()) / 1000)) : null;
+}
 
 export async function request(url, { method = "GET", body, headers, timeout = DEFAULT_TIMEOUT, signal } = {}) {
   const ctrl = new AbortController();
@@ -39,10 +50,10 @@ export async function request(url, { method = "GET", body, headers, timeout = DE
     }
   }
 
-  const fail = (code, status = 0, data = null) => {
+  const fail = (code, status = 0, data = null, res = null) => {
     const d = data && typeof data === "object" ? data : {};
     const detail = d.detail && typeof d.detail === "object" && !Array.isArray(d.detail) ? d.detail : {};
-    return { ok: false, code, status, data, params: d.params || detail.params || {} };
+    return { ok: false, code, status, data, params: d.params || detail.params || {}, retryAfter: parseRetryAfter(res) };
   };
 
   try {
@@ -54,14 +65,14 @@ export async function request(url, { method = "GET", body, headers, timeout = DE
     }
     let data = null;
     const text = await res.text().catch(() => null);
-    if (text == null) return fail("network", res.status); // corps tronqué / connexion coupée
+    if (text == null) return fail("network", res.status, null, res); // corps tronqué / connexion coupée
     if (text) {
       try { data = JSON.parse(text); } catch { data = text; }
     }
     if (res.ok) return { ok: true, data, status: res.status, code: null };
 
     const apiCode = data && typeof data === "object" ? data.code || data.detail?.code : null;
-    return fail(apiCode || (res.status === 422 ? "validation" : "http"), res.status, data);
+    return fail(apiCode || (res.status === 422 ? "validation" : "http"), res.status, data, res);
   } finally {
     if (timer) clearTimeout(timer);
     signal?.removeEventListener("abort", onAbort);
