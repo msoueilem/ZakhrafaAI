@@ -219,9 +219,9 @@ tr:last-child td{ border-bottom:none; }
 .bar-track{ flex:1; height:10px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; }
 .bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-soft)); }
 .history-list{ display:flex; flex-direction:column; gap:0; }
-.history-row{ display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line); font-size:0.9rem; }
+.history-row{ display:flex; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); font-size:0.9rem; }
 .history-row:last-child{ border-bottom:none; }
-.history-row .cat{ font-weight:600; text-transform:capitalize; }
+.history-row .cat{ font-weight:600; }
 .history-row .when{ color:var(--muted); font-family:var(--font-mono); font-size:0.8rem; }
 .empty-state{ text-align:center; padding:40px 20px; color:var(--muted); }
 .empty-state a{ color:var(--gold-soft); text-decoration:underline; }

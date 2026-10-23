@@ -99,6 +99,11 @@ def test_success_returns_gemini_png(client, enable):
     assert img.size == (768, 768)  # redimensionné à la taille demandée
     assert img.getpixel((10, 10)) == (180, 40, 30)
 
+    dash = client.get("/api/dashboard").json()
+    assert dash["repartition_par_moteur"]["diffusion"] == 1
+    assert dash["repartition_par_source"]["gemini"] == 1
+    assert dash["derniers_motifs"][0]["source"] == "gemini"
+
     assert fake.calls == 1
     req = fake.requests[0]
     assert req.url.path.endswith("/models/gemini-3.1-flash-lite-image:generateContent")
