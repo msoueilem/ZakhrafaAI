@@ -48,6 +48,8 @@ app.add_middleware(
 )
 
 
+MAX_SEED = 2**53 - 1
+
 # ---------------------------------------------------------------------------
 # Schémas
 # ---------------------------------------------------------------------------
@@ -56,7 +58,10 @@ class GenerateRequest(BaseModel):
     category: str = Field(..., description="zellige | tapis | broderie")
     engine: str = Field("gan", description="gan (rapide, procédural, 256px) | diffusion (rendu IA Gemini, 768px, repli procédural)")
     palette: str = Field("zellige_classique")
-    seed: Optional[int] = Field(None, description="graine aléatoire (bruit z); aléatoire si absente")
+    # Bornée à 2**53 - 1 (Number.MAX_SAFE_INTEGER) : au-delà, un navigateur ne
+    # relit pas la seed renvoyée à l'identique et « Régénérer » changerait d'image.
+    seed: Optional[int] = Field(None, ge=0, le=MAX_SEED,
+                                description="graine aléatoire (bruit z), entier 0..2**53-1 ; aléatoire si absente")
     size: Optional[int] = Field(None, description="taille de sortie en pixels (128-1024)")
     prompt: Optional[Annotated[str, StringConstraints(strip_whitespace=True, max_length=gemini.PROMPT_MAX_LEN)]] = Field(
         None, description="souhait de style libre (rendu IA uniquement, 300 caractères max)")

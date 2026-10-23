@@ -186,6 +186,9 @@ Corps de `POST /api/generate` :
 }
 ```
 
+`seed` est un entier de 0 à 2^53 − 1 (au-delà : 422, la valeur ne serait
+pas relue exactement par un navigateur) ; `size` est bornée à 128–1024 px.
+
 La réponse contient l'image (data URL PNG), `source` (`gemini`,
 `procedural` ou `trained_weights`), `model` (modèle Gemini si
 `source == "gemini"`) et `notice` (raison d'un repli procédural en mode IA).

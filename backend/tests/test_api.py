@@ -153,6 +153,19 @@ def test_wrong_seed_type_is_422(client):
     assert gen(client, seed="abc").status_code == 422
 
 
+@pytest.mark.parametrize("seed", [-1, 2**53, 10**30])
+def test_out_of_range_seed_is_422(client, seed):
+    res = gen(client, seed=seed)
+    assert res.status_code == 422
+    assert isinstance(res.json()["detail"], list)
+
+
+def test_max_safe_seed_is_accepted(client):
+    res = gen(client, seed=2**53 - 1)
+    assert res.status_code == 200
+    assert res.json()["seed"] == 2**53 - 1
+
+
 # --- tableau de bord ---------------------------------------------------------
 
 def test_dashboard_empty(client):

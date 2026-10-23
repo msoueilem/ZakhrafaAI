@@ -14,6 +14,8 @@
   // état du rendu IA d'après /api/meta (null tant qu'inconnu)
   let ai = null;
   const PROMPT_MAX = 300;
+  const SIZE_MIN = 128;
+  const SIZE_MAX = 1024;
 
   const els = {
     categorySeg: document.getElementById("categorySeg"),
@@ -37,6 +39,7 @@
     promptInput: document.getElementById("promptInput"),
     promptCount: document.getElementById("promptCount"),
     noticeBox: document.getElementById("noticeBox"),
+    seedError: document.getElementById("seedError"),
   };
 
   // Dernier résultat + paramètres de la requête qui l'a produit (le nom du
@@ -190,8 +193,14 @@
     badge.innerHTML = `<span class="dot"></span>`;
     badge.appendChild(document.createTextNode(label));
     els.metaSourceWrap.replaceChildren(badge);
-    els.noticeBox.textContent = result.notice || "";
-    els.noticeBox.style.display = result.notice ? "" : "none";
+    // le serveur borne la résolution à 128–1024 px : on le signale
+    const notices = [];
+    if (request.size && result.width !== request.size) {
+      notices.push(`Résolution ajustée à ${result.width} px (autorisé : ${SIZE_MIN}–${SIZE_MAX} px).`);
+    }
+    if (result.notice) notices.push(result.notice);
+    els.noticeBox.textContent = notices.join("\n");
+    els.noticeBox.style.display = notices.length ? "" : "none";
     els.downloadBtn.disabled = false;
     els.regenBtn.disabled = false;
 
@@ -220,15 +229,47 @@
     els.canvasWrap.appendChild(box);
   }
 
+  function showSeedError(message) {
+    els.seedError.textContent = message || "";
+    els.seedError.hidden = !message;
+    if (message) els.seedInput.setAttribute("aria-invalid", "true");
+    else els.seedInput.removeAttribute("aria-invalid");
+  }
+
+  // Seed : entier ≥ 0 représentable exactement en JavaScript (sinon la seed
+  // renvoyée par le serveur ne serait pas relue à l'identique).
+  // Renvoie { seed } ou { error }.
+  function parseSeed(raw) {
+    const text = raw.trim();
+    if (!text) return { seed: null };
+    if (!/^\d+$/.test(text)) return { error: "La seed doit être un entier positif ou nul (ex. 42)." };
+    const value = Number(text);
+    if (!Number.isSafeInteger(value)) {
+      return { error: `Seed trop grande : maximum ${Number.MAX_SAFE_INTEGER}.` };
+    }
+    return { seed: value };
+  }
+
+  // Renvoie la requête, ou null si un champ est invalide (message affiché)
   function currentRequest() {
-    const seedVal = els.seedInput.value ? parseInt(els.seedInput.value, 10) : null;
-    const sizeVal = els.sizeInput.value ? parseInt(els.sizeInput.value, 10) : null;
+    // un champ number contenant du texte non numérique renvoie "" + badInput
+    if (els.seedInput.validity.badInput) {
+      showSeedError("La seed doit être un entier positif ou nul (ex. 42).");
+      return null;
+    }
+    const parsed = parseSeed(els.seedInput.value);
+    if (parsed.error) {
+      showSeedError(parsed.error);
+      return null;
+    }
+    showSeedError(null);
+    const sizeVal = els.sizeInput.value ? Math.round(Number(els.sizeInput.value)) : null;
     return {
       category: state.category,
       engine: state.engine,
       palette: state.palette,
-      seed: Number.isNaN(seedVal) ? null : seedVal,
-      size: Number.isNaN(sizeVal) ? null : sizeVal,
+      seed: parsed.seed,
+      size: Number.isFinite(sizeVal) && sizeVal > 0 ? sizeVal : null,
       prompt: state.engine === "diffusion" ? els.promptInput.value.trim() || null : null,
     };
   }
@@ -251,7 +292,12 @@
     }
   }
 
-  els.generateBtn.addEventListener("click", () => doGenerate(currentRequest()));
+  els.generateBtn.addEventListener("click", () => {
+    const request = currentRequest();
+    if (request) doGenerate(request);
+    else els.seedInput.focus();
+  });
+  els.seedInput.addEventListener("input", () => showSeedError(null));
   els.regenBtn.addEventListener("click", () => {
     if (last) doGenerate({ ...last.request });
   });

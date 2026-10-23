@@ -106,12 +106,14 @@
 
         <div class="field">
           <label for="seedInput">Seed (optionnel)</label>
-          <input type="number" id="seedInput" placeholder="aléatoire" />
+          <input type="number" id="seedInput" placeholder="aléatoire" min="0" max="9007199254740991" step="1" inputmode="numeric" aria-describedby="seedError" />
+          <small class="field-hint field-error" id="seedError" role="alert" hidden></small>
         </div>
 
         <div class="field">
           <label for="sizeInput">Résolution (px)</label>
-          <input type="number" id="sizeInput" placeholder="défaut selon le moteur" min="128" max="1024" step="32" />
+          <input type="number" id="sizeInput" placeholder="défaut selon le moteur" min="128" max="1024" step="1" inputmode="numeric" aria-describedby="sizeHint" />
+          <small class="field-hint" id="sizeHint">Entre 128 et 1024 px ; une valeur hors bornes est ajustée.</small>
         </div>
 
         <button class="btn btn-primary btn-block" id="generateBtn">Générer le motif</button>
