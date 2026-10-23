@@ -28,7 +28,7 @@
 
       const historyList = document.getElementById("historyList");
       if (!data.derniers_motifs.length) {
-        historyList.innerHTML = `<div class="empty-state">Aucun motif généré pour l'instant. <a href="/studio.html">Ouvrir l'atelier →</a></div>`;
+        historyList.innerHTML = `<div class="empty-state">Aucun motif généré pour l'instant. <a href="/studio">Ouvrir l'atelier →</a></div>`;
       } else {
         historyList.innerHTML = "";
         data.derniers_motifs.forEach((h) => {

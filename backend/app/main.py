@@ -19,7 +19,7 @@ from typing import Annotated, List, Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.services import engine, gemini
@@ -189,9 +189,19 @@ if FRONTEND_DIR.exists():
     def index():
         return FileResponse(FRONTEND_DIR / "index.html")
 
+    # URLs propres (/studio) ; les anciennes en .html redirigent en 301
+    PAGES = {"studio", "dashboard"}
+
     @app.get("/{page}.html")
+    def legacy_page(page: str):
+        if page == "index":
+            return RedirectResponse("/", status_code=301)
+        if page in PAGES:
+            return RedirectResponse(f"/{page}", status_code=301)
+        raise HTTPException(status_code=404, detail="Page introuvable")
+
+    @app.get("/{page}")
     def page(page: str):
-        target = FRONTEND_DIR / f"{page}.html"
-        if not target.exists():
+        if page not in PAGES:
             raise HTTPException(status_code=404, detail="Page introuvable")
-        return FileResponse(target)
+        return FileResponse(FRONTEND_DIR / f"{page}.html")

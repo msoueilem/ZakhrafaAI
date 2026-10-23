@@ -165,12 +165,20 @@ def test_dashboard_lists_at_most_8_recent(client):
 
 # --- frontend statique ---------------------------------------------------------
 
-@pytest.mark.parametrize("path", ["/", "/index.html", "/studio.html", "/dashboard.html",
+@pytest.mark.parametrize("path", ["/", "/studio", "/dashboard",
                                   "/assets/css/styles.css", "/assets/js/api.js",
                                   "/assets/js/studio.js", "/assets/js/dashboard.js"])
 def test_static_pages(client, path):
     assert client.get(path).status_code == 200
 
 
-def test_unknown_page_is_404(client):
-    assert client.get("/inexistante.html").status_code == 404
+@pytest.mark.parametrize("old, new", [("/index.html", "/"), ("/studio.html", "/studio"),
+                                      ("/dashboard.html", "/dashboard")])
+def test_html_urls_redirect_to_clean_urls(client, old, new):
+    res = client.get(old, follow_redirects=False)
+    assert res.status_code == 301 and res.headers["location"] == new
+
+
+@pytest.mark.parametrize("path", ["/inexistante.html", "/inexistante", "/api"])
+def test_unknown_page_is_404(client, path):
+    assert client.get(path).status_code == 404
