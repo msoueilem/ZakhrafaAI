@@ -108,7 +108,7 @@ def test_success_returns_gemini_png(client, enable):
     text, inline = body["contents"][0]["parts"]
     assert "zellige" in text["text"]
     assert "Souhait de style de l'utilisateur" in text["text"] and "« tons plus chauds »" in text["text"]
-    assert "same composition" in text["text"]
+    assert "same layout, geometry" in text["text"]
     base = Image.open(io.BytesIO(base64.b64decode(inline["inline_data"]["data"])))
     assert base.format == "PNG" and base.size == (768, 768)
     assert body["generationConfig"]["responseModalities"] == ["TEXT", "IMAGE"]

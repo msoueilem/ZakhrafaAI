@@ -123,11 +123,12 @@ class GeminiConfig:
 
 _CRAFT = {
     "zellige": (
-        "authentic Moroccan zellige tilework: hand-cut glazed ceramic tile pieces "
-        "(terracotta body, enamel glaze) set in thin matte grout lines, each piece "
-        "following exactly the shapes and colours of the drawing, with the slight "
-        "natural variations in glaze tone, soft glossy reflections and tiny "
-        "irregular hand-cut edges typical of Fès craftsmanship"
+        "authentic Moroccan zellige tilework from Fès: every coloured shape of the "
+        "drawing becomes its own hand-cut piece of glazed terracotta tile, and all "
+        "pieces are separated by clearly visible recessed off-white cement grout "
+        "joints; thick glossy enamel with visible light reflections, uneven glaze "
+        "thickness, tiny pits and chips, slightly irregular hand-chiselled edges and "
+        "subtle tone variation from one piece to the next"
     ),
     "tapis": (
         "an authentic hand-knotted Moroccan Berber wool rug: dense visible wool pile "
@@ -143,8 +144,8 @@ _CRAFT = {
 }
 
 _CONSTRAINTS = (
-    "Keep exactly the same composition, geometry, symmetry, proportions and colour "
-    "palette as the input image: do not add, remove, move or reshape motifs. "
+    "Keep the same layout, geometry, symmetry, motif positions and proportions, and "
+    "the same colour palette as the input image: do not add, remove or move motifs. "
     "Straight top-down flat view filling the entire square frame, even soft "
     "lighting, no perspective, no border, no background objects, no people, "
     "no text, letters, logo or watermark."
@@ -155,7 +156,9 @@ def build_prompt(category: str, user_prompt: Optional[str] = None) -> str:
     craft = _CRAFT.get(category, _CRAFT["zellige"])
     parts = [
         f"The input image is a flat digital drawing of a traditional Moroccan pattern. "
-        f"Re-render this exact pattern as a photograph of {craft}.",
+        f"Re-render this exact pattern as a photograph of {craft}. The result must "
+        f"clearly look like a real close-up photograph of the physical handmade "
+        f"object, not like a flat digital illustration.",
         _CONSTRAINTS,
     ]
     if user_prompt:
