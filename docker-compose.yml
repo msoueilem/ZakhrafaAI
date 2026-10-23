@@ -7,3 +7,18 @@ services:
     ports:
       # exposé uniquement en local : à publier via un reverse proxy
       - "127.0.0.1:${ZAKHRAFAAI_PORT:-8000}:8000"
+    environment:
+      # Rendu IA (mode « diffusion ») : sans clé, repli sur le procédural.
+      # Valeurs interpolées depuis l'environnement ou le fichier .env à la
+      # racine (lu automatiquement par Compose, jamais copié dans l'image).
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_IMAGE_MODEL: ${GEMINI_IMAGE_MODEL:-gemini-3.1-flash-lite-image}
+      GEMINI_DAILY_LIMIT: ${GEMINI_DAILY_LIMIT:-60}
+      GEMINI_PER_IP_LIMIT: ${GEMINI_PER_IP_LIMIT:-5}
+      GEMINI_TIMEOUT: ${GEMINI_TIMEOUT:-90}
+    volumes:
+      # compteur journalier des rendus IA (survit aux redémarrages)
+      - zakhrafaai-data:/data
+
+volumes:
+  zakhrafaai-data:
