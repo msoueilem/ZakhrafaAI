@@ -135,6 +135,20 @@ Corps de `POST /api/generate` :
 La documentation interactive (Swagger) est disponible sur
 `http://localhost:8000/docs` une fois le serveur démarré.
 
+## Tests
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
+Les tests couvrent l'API (santé, métadonnées, toutes les combinaisons
+catégorie × moteur, déterminisme par seed, variation structurelle entre
+seeds, validation 422, bornage de la taille, compteurs du tableau de bord,
+pages statiques). Les tests de l'architecture GAN (`tests/test_gan_model.py`)
+sont ignorés si `torch` n'est pas installé.
+
 ## Limites connues / perspectives (cf. §9 du rapport)
 
 - Le générateur procédural donne un rendu stable et rapide, mais n'est pas
