@@ -29,7 +29,8 @@ Garanties :
   (assist_disabled, assist_ip_limit, assist_daily_limit, assist_error) que
   le routeur traduit en 503/429/502 — jamais de 500 ;
 - la clé ne part que dans l'en-tête `Authorization` ; elle n'est jamais
-  journalisée ni renvoyée ;
+  journalisée ni renvoyée ; les messages d'erreur de DeepSeek ne sont jamais
+  renvoyés au client et ne sont journalisés qu'après `redact()` ;
 - le texte de l'utilisateur n'apparaît que dans le message « user », encodé
   en chaîne JSON et présenté comme une donnée : le prompt système est fixe ;
 - chaque appel facturé (réponse HTTP 200, relance comprise) compte dans le
@@ -44,6 +45,7 @@ import os
 import re
 import threading
 import time
+import traceback
 from collections import OrderedDict, deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -53,6 +55,7 @@ from typing import Callable, Deque, Dict, Optional, Tuple, TypeVar
 import httpx
 
 from app.generators.utils import DEFAULT_PALETTE, PALETTE_LABELS, PALETTES
+from app.redact import redact
 from app.services import engine
 from app.services.gemini import PROMPT_MAX_LEN
 
@@ -519,17 +522,18 @@ class DeepSeekAssistant:
                     result = parse(content)
                 except (ValueError, TypeError) as exc:
                     logger.warning("DeepSeek %s : réponse inexploitable (essai %d) : %s",
-                                   task, attempt, exc)
+                                   task, attempt, redact(exc))
                     continue
                 logger.info("DeepSeek %s (%s) en %.1f s", task, cfg.model, time.time() - t0)
                 return result
             raise AssistError(CODE_ERROR, 502, "JSON inexploitable après relance")
         except AssistError as exc:
             if exc.code == CODE_ERROR:
-                logger.warning("DeepSeek %s échoué (%s) : %s", task, cfg.model, exc.reason)
+                logger.warning("DeepSeek %s échoué (%s) : %s", task, cfg.model, redact(exc.reason))
             raise
         except Exception as exc:  # filet de sécurité : jamais de 500 à cause de DeepSeek
-            logger.exception("Erreur inattendue pendant l'appel DeepSeek %s (%s)", task, cfg.model)
+            logger.error("Erreur inattendue pendant l'appel DeepSeek %s (%s) :\n%s",
+                         task, cfg.model, redact(traceback.format_exc()))
             raise AssistError(CODE_ERROR, 502, "erreur interne") from exc
         finally:
             with self._lock:
@@ -589,7 +593,7 @@ def _api_error_message(res: httpx.Response) -> str:
         msg = res.json().get("error", {}).get("message", "")
     except (ValueError, AttributeError):
         msg = ""
-    msg = " ".join(str(msg).split())[:200]
+    msg = redact(" ".join(str(msg).split()))[:200]
     return msg or (res.reason_phrase or "erreur")
 
 

@@ -183,14 +183,17 @@ def _garbage(**_):
     (_timeout, "délai dépassé"),
     (_garbage, "illisible"),
 ])
-def test_failures_fall_back_without_counting_quota(client, enable, responder, fragment):
+def test_failures_fall_back_without_counting_quota(client, enable, caplog, responder, fragment):
     enable(responder)
-    res = ai(client)
+    with caplog.at_level("WARNING"):
+        res = ai(client)
     assert res.status_code == 200
     data = res.json()
     assert data["source"] == "procedural"
     assert data["model"] is None
-    assert "service IA" in data["notice"] and fragment in data["notice"]
+    # notice : phrase fixe par code ; le détail de l'échec ne va qu'aux journaux
+    assert data["notice"] == gemini.notice_for(data["notice_code"])
+    assert "service IA" in data["notice"] and fragment in caplog.text
     assert FAKE_KEY not in res.text
     assert decode_png(data["image"]).size == (768, 768)
     assert client.get("/api/meta").json()["ai"]["remaining_today"] == 60
@@ -288,3 +291,53 @@ def test_config_from_env(monkeypatch, tmp_path):
     assert cfg.enabled and cfg.model == "gemini-3-pro-image"
     assert (cfg.daily_limit, cfg.per_ip_limit, cfg.timeout) == (10, 5, 90.0)
     assert FAKE_KEY not in repr(cfg)
+
+
+# --- fuite du texte d'erreur amont ------------------------------------------
+
+LEAKED_KEY = "AIzaSyD-FAKEfake0123456789abcdefGHIJKL"
+
+
+def _http_400_quoting_key(**_):
+    return httpx.Response(400, json={"error": {
+        "code": 400, "status": "INVALID_ARGUMENT",
+        "message": f"API key not valid: {LEAKED_KEY} (projects/123456789012)"}})
+
+
+def test_upstream_error_text_never_reaches_client_and_is_redacted_in_logs(client, enable, caplog):
+    enable(_http_400_quoting_key)
+    with caplog.at_level("DEBUG"):
+        res = ai(client)
+    data = res.json()
+    assert (data["source"], data["notice_code"]) == ("procedural", "service_error")
+    assert data["notice"] == gemini.NOTICES["service_error"]
+    assert LEAKED_KEY not in res.text and "API key not valid" not in res.text
+    assert "123456789012" not in res.text
+    # journalisé pour le diagnostic, mais clé masquée
+    assert "HTTP 400" in caplog.text and "API key not valid" in caplog.text
+    assert LEAKED_KEY not in caplog.text and "AIza" not in caplog.text
+    assert "[masqué]" in caplog.text
+
+
+def test_notice_is_fixed_per_code():
+    for code in ("ai_disabled", "timeout", "blocked", "service_error"):
+        assert gemini.notice_for(code) == gemini.NOTICES[code]
+    assert "30/jour" in gemini.notice_for("daily_limit", {"n": 30})
+    assert "5 par 10 min" in gemini.notice_for("ip_limit", {"n": 5})
+    assert gemini.notice_for("inconnu") == gemini.NOTICES["service_error"]
+
+
+def test_redact_masks_tokens():
+    from app.redact import MASK, redact
+    hex_token = "0123456789abcdef" * 3
+    b64_token = "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo0MTIzNDU2Nzg5MA=="
+    text = (f"cle {LEAKED_KEY} ds sk-ABCDEFabcdef0123456789 hex {hex_token} "
+            f"b64 {b64_token} fin")
+    out = redact(text)
+    for secret in (LEAKED_KEY, "sk-ABCDEFabcdef0123456789", hex_token, b64_token):
+        assert secret not in out
+    assert out.count(MASK) == 4
+    assert out.startswith("cle ") and out.endswith(" fin")
+    # texte ordinaire intact (y compris un mot long sans chiffre)
+    plain = "Requête refusée : anticonstitutionnellementxxxxxxxxxx, quota dépassé (HTTP 429)."
+    assert redact(plain) == plain

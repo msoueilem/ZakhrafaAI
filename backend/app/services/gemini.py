@@ -21,8 +21,11 @@ Configuration (variables d'environnement) :
 
 Garanties :
 - jamais d'exception vers l'API : tout échec produit un `RenderOutcome` sans
-  image, avec un `notice` en français, et l'appelant se replie sur le
-  procédural ;
+  image, avec un `notice_code` et un `notice` en français, et l'appelant se
+  replie sur le procédural ;
+- `notice` est une phrase fixe par code (cf. `notice_for`) : le texte d'erreur
+  renvoyé par Google (qui peut citer la clé ou le numéro de projet) n'atteint
+  jamais le client, et n'est journalisé qu'après `redact()` ;
 - la clé n'est jamais journalisée ni renvoyée (elle part uniquement dans
   l'en-tête `x-goog-api-key`) ;
 - seuls les rendus réussis comptent dans le quota journalier (persisté sur
@@ -39,6 +42,7 @@ import logging
 import os
 import threading
 import time
+import traceback
 from collections import OrderedDict, deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -47,6 +51,8 @@ from typing import Any, Deque, Dict, Optional, Tuple
 
 import httpx
 from PIL import Image, UnidentifiedImageError
+
+from app.redact import redact
 
 logger = logging.getLogger(__name__)
 
@@ -187,22 +193,32 @@ CODE_TIMEOUT = "timeout"             # délai dépassé
 CODE_BLOCKED = "blocked"             # aucune image renvoyée / blocage de sécurité
 CODE_SERVICE_ERROR = "service_error"  # toute autre erreur du service IA
 
-NOTICE_DISABLED = ("Rendu IA indisponible : clé GEMINI_API_KEY absente sur le serveur. "
-                   "Image issue du générateur procédural.")
+_FALLBACK = "Image issue du générateur procédural."
+
+# Champ `notice` (rétrocompatibilité) : une phrase fixe par code. Seuls les
+# paramètres numériques issus de la configuration ({n}) y sont insérés, jamais
+# un texte venu du service amont.
+NOTICES: Dict[str, str] = {
+    CODE_DISABLED: "Rendu IA indisponible : clé GEMINI_API_KEY absente sur le serveur. " + _FALLBACK,
+    CODE_DAILY_LIMIT: ("Quota journalier de rendus IA atteint ({n}/jour, remise à zéro à "
+                       "minuit UTC). " + _FALLBACK),
+    CODE_IP_LIMIT: "Limite de rendus IA atteinte pour votre adresse ({n} par 10 min). " + _FALLBACK,
+    CODE_TIMEOUT: "Le service IA n'a pas répondu à temps. " + _FALLBACK,
+    CODE_BLOCKED: "Le service IA n'a renvoyé aucune image exploitable (contenu bloqué ou vide). "
+                  + _FALLBACK,
+    CODE_SERVICE_ERROR: "Erreur du service IA. " + _FALLBACK,
+}
+NOTICE_DISABLED = NOTICES[CODE_DISABLED]
 
 
-def _notice_daily(limit: int) -> str:
-    return (f"Quota journalier de rendus IA atteint ({limit}/jour, remise à zéro à minuit UTC). "
-            "Image issue du générateur procédural.")
+def notice_for(code: str, params: Optional[Dict[str, Any]] = None) -> str:
+    """Phrase française fixe associée à `code` (repli : service_error)."""
+    template = NOTICES.get(code, NOTICES[CODE_SERVICE_ERROR])
+    return template.format(**(params or {})) if params else template
 
 
-def _notice_ip(limit: int) -> str:
-    return (f"Limite de rendus IA atteinte pour votre adresse ({limit} par 10 min). "
-            "Image issue du générateur procédural.")
-
-
-def _notice_error(reason: str) -> str:
-    return f"Erreur du service IA ({reason}). Image issue du générateur procédural."
+def _fallback(code: str, **params: Any) -> "RenderOutcome":
+    return RenderOutcome(notice=notice_for(code, params), notice_code=code, notice_params=params)
 
 
 @dataclass
@@ -220,8 +236,9 @@ class RenderOutcome:
 
 
 class GeminiError(Exception):
-    """Échec d'un appel Gemini ; `reason` est un libellé français sans secret,
-    `code` le code machine correspondant (timeout | blocked | service_error)."""
+    """Échec d'un appel Gemini ; `code` est le code machine (timeout | blocked |
+    service_error). `reason` peut contenir le message d'erreur de Google :
+    réservé aux journaux (toujours via `redact()`), jamais renvoyé au client."""
 
     def __init__(self, reason: str, code: str = CODE_SERVICE_ERROR):
         super().__init__(reason)
@@ -348,7 +365,7 @@ class GeminiRenderer:
     ) -> RenderOutcome:
         cfg = self.config
         if not cfg.enabled:
-            return RenderOutcome(notice=NOTICE_DISABLED, notice_code=CODE_DISABLED)
+            return _fallback(CODE_DISABLED)
 
         key: CacheKey = (category, palette, seed, size, prompt or "", cfg.model)
         cached = self._cache_get(key)
@@ -358,11 +375,9 @@ class GeminiRenderer:
         with self._lock:
             self._roll_day()
             if self._count + self._inflight >= cfg.daily_limit:
-                return RenderOutcome(notice=_notice_daily(cfg.daily_limit), notice_code=CODE_DAILY_LIMIT,
-                                     notice_params={"n": cfg.daily_limit})
+                return _fallback(CODE_DAILY_LIMIT, n=cfg.daily_limit)
             if not self._ip_allowed(client_ip or "inconnue", time.time()):
-                return RenderOutcome(notice=_notice_ip(cfg.per_ip_limit), notice_code=CODE_IP_LIMIT,
-                                     notice_params={"n": cfg.per_ip_limit})
+                return _fallback(CODE_IP_LIMIT, n=cfg.per_ip_limit)
             self._inflight += 1
 
         success = False
@@ -378,11 +393,12 @@ class GeminiRenderer:
             logger.info("Rendu Gemini %s (%s) en %.1f s", category, cfg.model, time.time() - t0)
             return RenderOutcome(image=image, model=cfg.model)
         except GeminiError as exc:
-            logger.warning("Rendu Gemini échoué (%s) : %s", cfg.model, exc.reason)
-            return RenderOutcome(notice=_notice_error(exc.reason), notice_code=exc.code)
+            logger.warning("Rendu Gemini échoué (%s) : %s", cfg.model, redact(exc.reason))
+            return _fallback(exc.code)
         except Exception:  # filet de sécurité : jamais de 500 à cause de Gemini
-            logger.exception("Erreur inattendue pendant le rendu Gemini (%s)", cfg.model)
-            return RenderOutcome(notice=_notice_error("erreur interne"), notice_code=CODE_SERVICE_ERROR)
+            logger.error("Erreur inattendue pendant le rendu Gemini (%s) :\n%s",
+                         cfg.model, redact(traceback.format_exc()))
+            return _fallback(CODE_SERVICE_ERROR)
         finally:
             with self._lock:
                 self._inflight -= 1
@@ -440,7 +456,7 @@ def _api_error_message(res: httpx.Response) -> str:
         msg = res.json().get("error", {}).get("message", "")
     except (ValueError, AttributeError):
         msg = ""
-    msg = " ".join(str(msg).split())[:200]
+    msg = redact(" ".join(str(msg).split()))[:200]
     return msg or (res.reason_phrase or "erreur")
 
 

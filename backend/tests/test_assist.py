@@ -297,6 +297,15 @@ def test_upstream_http_error_is_502_without_key_in_logs(client, enable, caplog):
     assert client.get("/api/assist/status").json()["remaining_today"] == 50
 
 
+def test_upstream_error_text_redacted_in_logs(client, enable, caplog):
+    leaked = "sk-0123456789abcdefABCDEF"
+    enable(httpx.Response(401, json={"error": {"message": f"Invalid key {leaked}"}}))
+    with caplog.at_level("DEBUG"):
+        res = enhance(client)
+    assert res.json() == {"code": "assist_error"} and leaked not in res.text
+    assert "Invalid key [masqué]" in caplog.text and leaked not in caplog.text
+
+
 def test_upstream_timeout_is_502(client, enable):
     def boom(request):
         raise httpx.ReadTimeout("lent", request=request)

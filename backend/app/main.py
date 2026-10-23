@@ -127,7 +127,9 @@ class GenerateResponse(BaseModel):
     width: int
     height: int
     model: Optional[str] = None
-    notice: Optional[str] = None  # message français (rétrocompatibilité)
+    # phrase française fixe par notice_code (rétrocompatibilité) ; jamais le
+    # texte d'erreur du service amont (cf. gemini.NOTICES)
+    notice: Optional[str] = None
     # code machine du repli IA, traduit par le frontend :
     # ai_disabled | daily_limit | ip_limit | timeout | blocked | service_error
     notice_code: Optional[str] = None
