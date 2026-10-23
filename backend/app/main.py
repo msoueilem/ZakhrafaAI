@@ -368,14 +368,18 @@ def dashboard():
 if FRONTEND_DIR.exists():
     app.mount("/assets", StaticFiles(directory=FRONTEND_DIR), name="assets")
 
-    @app.get("/")
+    # HEAD en plus de GET (sondes de disponibilité, aperçus de liens) ;
+    # FileResponse n'envoie alors que les en-têtes.
+    PAGE_METHODS = ["GET", "HEAD"]
+
+    @app.api_route("/", methods=PAGE_METHODS)
     def index():
         return FileResponse(FRONTEND_DIR / "index.html")
 
     # URLs propres (/studio) ; les anciennes en .html redirigent en 301
     PAGES = {"studio", "dashboard"}
 
-    @app.get("/{page}.html")
+    @app.api_route("/{page}.html", methods=PAGE_METHODS)
     def legacy_page(page: str):
         if page == "index":
             return RedirectResponse("/", status_code=301)
@@ -386,13 +390,13 @@ if FRONTEND_DIR.exists():
     # « /studio/ » : sans cette route, Starlette redirigeait (307) vers une
     # URL absolue reconstruite côté conteneur, donc en http:// derrière nginx.
     # Redirection explicite, permanente et relative (le schéma est conservé).
-    @app.get("/{page}/")
+    @app.api_route("/{page}/", methods=PAGE_METHODS)
     def page_trailing_slash(page: str):
         if page not in PAGES:
             raise HTTPException(status_code=404, detail="Page introuvable")
         return RedirectResponse(f"/{page}", status_code=301)
 
-    @app.get("/{page}")
+    @app.api_route("/{page}", methods=PAGE_METHODS)
     def page(page: str):
         if page not in PAGES:
             raise HTTPException(status_code=404, detail="Page introuvable")

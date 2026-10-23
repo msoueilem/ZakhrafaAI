@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 
+import pytest
+
 from app import main
 
 SECRET = "SECRET-SAISIE-0123456789"
@@ -99,3 +101,34 @@ def test_middleware_ignores_non_api_paths():
              "headers": [(b"content-length", b"999999")]}
     asyncio.run(mw(scope, None, None))
     assert called == ["/studio"]
+
+
+# --- HEAD sur les pages ----------------------------------------------------------
+
+
+@pytest.mark.parametrize("path", ["/", "/studio", "/dashboard"])
+def test_head_on_pages(client, path):
+    get = client.get(path)
+    res = client.head(path)
+    assert res.status_code == 200 == get.status_code
+    assert res.headers["content-type"].startswith("text/html")
+    assert res.headers["content-length"] == get.headers["content-length"]
+    assert res.content == b""
+
+
+@pytest.mark.parametrize("path, location", [
+    ("/index.html", "/"), ("/studio.html", "/studio"), ("/dashboard.html", "/dashboard"),
+    ("/studio/", "/studio"), ("/dashboard/", "/dashboard"),
+])
+def test_head_on_legacy_redirects(client, path, location):
+    res = client.head(path, follow_redirects=False)
+    assert res.status_code == 301 and res.headers["location"] == location
+
+
+@pytest.mark.parametrize("path", ["/inconnue", "/inconnue.html", "/inconnue/"])
+def test_head_unknown_page_is_404(client, path):
+    assert client.head(path, follow_redirects=False).status_code == 404
+
+
+def test_post_on_page_still_405(client):
+    assert client.post("/studio").status_code == 405
