@@ -31,9 +31,14 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # --proxy-headers : le schéma (X-Forwarded-Proto) posé par nginx est pris en
 # compte, sinon les URL absolues générées par l'application (redirections)
-# partent en http://. « * » (faire confiance à tout pair) est acceptable ici :
-# le port n'est publié que sur 127.0.0.1 (docker-compose.yml) et n'est
-# joignable qu'à travers nginx, seul pair possible. La limite de rendus IA
-# par adresse s'appuie sur X-Real-IP, posé par nginx (cf. client_ip()).
+# partent en http://. Pairs de confiance restreints aux plages privées :
+# nginx, sur l'hôte, joint le conteneur via le pont Docker (passerelle en
+# 172.16.0.0/12) ; 127.0.0.1 couvre le HEALTHCHECK. uvicorn accepte des réseaux
+# CIDR dans --forwarded-allow-ips depuis au moins 0.32 (plancher de
+# requirements.txt ; vérifié dans 0.32.0 et 0.54.0). Le port n'est de toute
+# façon publié que sur 127.0.0.1 (docker-compose.yml). La limite de rendus IA
+# par adresse s'appuie sur X-Real-IP, que nginx écrase avec $remote_addr
+# (cf. app/net.py, client_ip()).
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
-     "--proxy-headers", "--forwarded-allow-ips", "*"]
+     "--proxy-headers", \
+     "--forwarded-allow-ips", "127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"]
