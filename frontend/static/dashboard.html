@@ -1,78 +1,103 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!doctype html>
+<html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tableau de bord — ZakhrafaAI</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 40 40%27%3E%3Crect width=%2740%27 height=%2740%27 rx=%276%27 fill=%27%230B2436%27/%3E%3Cpolygon points=%2720,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14%27 fill=%27none%27 stroke=%27%23C9A227%27 stroke-width=%272.5%27/%3E%3C/svg%3E" />
-<link rel="stylesheet" href="/assets/css/styles.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="meta.dashboard.title">Tableau de bord — ZakhrafaAI</title>
+<meta name="description" content="Statistiques des motifs générés sur ZakhrafaAI : par artisanat, par mode et derniers motifs." data-i18n-attr="content:meta.dashboard.description">
+<meta name="theme-color" content="#070B12">
+<script src="/assets/js/boot.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/dashboard.css">
+<link rel="icon" href="/assets/img/ornament.svg" type="image/svg+xml">
 </head>
-<body>
+<body data-page="dashboard">
+<header id="site-header"></header>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <a class="brand" href="/">
-      <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="20,2 24,14 36,14 26,21 30,34 20,26 10,34 14,21 4,14 16,14"
-                 fill="none" stroke="#C9A227" stroke-width="2"/>
-      </svg>
-      ZakhrafaAI
-    </a>
-    <div class="nav-links" id="navMenu">
-      <a href="/">Accueil</a>
-      <a href="/studio">Générer</a>
-      <a href="/dashboard" class="active">Tableau de bord</a>
-    </div>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Ouvrir le menu">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-    <a class="nav-cta" href="/studio">Ouvrir l'atelier</a>
-  </div>
-</nav>
-
-<main class="section" style="padding-top:40px;">
-  <div class="container">
-    <div class="section-head">
-      <div class="eyebrow">Tableau de bord</div>
-      <h2>Motifs générés sur ce serveur</h2>
-      <p>Ces statistiques sont globales : elles comptent tous les motifs générés sur ce serveur (tous visiteurs confondus) depuis son démarrage, et ne sont pas persistées entre les redémarrages.</p>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-card"><b id="statTotal">—</b><span>Motifs générés</span></div>
-      <div class="stat-card"><b id="statZellige">—</b><span>Zellige</span></div>
-      <div class="stat-card"><b id="statTapis">—</b><span>Tapis</span></div>
-      <div class="stat-card"><b id="statBroderie">—</b><span>Broderie</span></div>
-    </div>
-
-    <div class="dash-grid">
-      <div class="panel">
-        <h3>Répartition par catégorie</h3>
-        <div id="barChart"></div>
-        <h3 style="margin-top:28px;">Par mode de rendu</h3>
-        <div id="engineChart"></div>
-        <p class="field-hint" id="sourceNote"></p>
+<main id="main" tabindex="-1">
+  <!-- En-tête de page -->
+  <section class="section section--tight lattice-host under-nav dash-hero">
+    <div class="lattice lattice--subtle" aria-hidden="true"></div>
+    <div class="container dash-head">
+      <div class="stack dash-head__text" style="--gap: var(--sp-3)">
+        <span class="eyebrow eyebrow--chip enter" data-i18n="dashboard.eyebrow">Tableau de bord</span>
+        <h1 class="h2 enter" style="--i:1" data-i18n="dashboard.title">Activité de ZakhrafaAI</h1>
+        <p class="lead enter" style="--i:2" data-i18n="dashboard.subtitle">Motifs générés par l'ensemble des visiteurs depuis le dernier redémarrage du serveur.</p>
       </div>
-      <div class="panel">
-        <h3>Derniers motifs</h3>
-        <div class="history-list" id="historyList">
-          <div class="empty-state">Chargement…</div>
+      <div class="dash-toolbar enter" style="--i:3">
+        <p class="dash-note text-sm muted">
+          <span class="js-icon" data-icon="info"></span>
+          <span><span data-i18n="dashboard.note">Statistiques globales gardées en mémoire : elles repartent de zéro à chaque redémarrage.</span>
+          <span data-i18n="dashboard.auto">Actualisation automatique toutes les 30 s.</span></span>
+        </p>
+        <div class="dash-toolbar__actions">
+          <span class="text-sm subtle dash-updated" id="dash-updated" role="status" aria-live="polite"></span>
+          <button type="button" class="btn btn--secondary btn--sm" id="dash-refresh">
+            <span class="js-icon" data-icon="refresh"></span><span data-i18n="dashboard.refresh">Actualiser</span>
+          </button>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <section class="section section--tight dash-body" aria-labelledby="dash-stats-h">
+    <div class="container stack" style="--gap: var(--sp-6)">
+      <!-- erreur de chargement (rendue en JS) -->
+      <div id="dash-error" hidden></div>
+
+      <h2 class="sr-only" id="dash-stats-h" data-i18n="dashboard.stats_heading">Chiffres clés</h2>
+      <ul class="dash-stats" role="list" id="dash-stats" aria-busy="true">
+        <li class="stat stat--total">
+          <p class="stat__label"><span class="js-icon" data-icon="chart"></span><span data-i18n="dashboard.stat.total">Motifs générés</span></p>
+          <p class="stat__value" data-stat="total"><span class="skeleton skeleton--text stat__skel"></span></p>
+          <div class="stat__foot" data-foot="total"></div>
+        </li>
+        <li class="stat stat--fast">
+          <p class="stat__label"><span class="dot dot--fast"></span><span data-i18n="dashboard.stat.fast">En mode Rapide</span></p>
+          <p class="stat__value" data-stat="fast"><span class="skeleton skeleton--text stat__skel"></span></p>
+          <div class="stat__foot" data-foot="fast"></div>
+        </li>
+        <li class="stat stat--ai">
+          <p class="stat__label"><span class="dot dot--ai"></span><span data-i18n="dashboard.stat.ai">En Rendu IA</span></p>
+          <p class="stat__value" data-stat="ai"><span class="skeleton skeleton--text stat__skel"></span></p>
+          <div class="stat__foot" data-foot="ai"></div>
+        </li>
+        <li class="stat stat--left">
+          <p class="stat__label"><span class="js-icon" data-icon="sparkle"></span><span data-i18n="dashboard.stat.ai_left">Rendus IA restants aujourd'hui</span></p>
+          <p class="stat__value" data-stat="ai_left"><span class="skeleton skeleton--text stat__skel"></span></p>
+          <div class="stat__foot" data-foot="ai_left"></div>
+        </li>
+      </ul>
+
+      <div class="dash-split">
+        <section class="panel dash-chart" aria-labelledby="dash-cat-h">
+          <h2 class="h4" id="dash-cat-h" data-i18n="dashboard.by_category">Par artisanat</h2>
+          <div class="dash-chart__body" id="dash-by-category"></div>
+        </section>
+        <section class="panel dash-chart" aria-labelledby="dash-mode-h">
+          <h2 class="h4" id="dash-mode-h" data-i18n="dashboard.by_mode">Par mode</h2>
+          <div class="dash-chart__body" id="dash-by-mode"></div>
+        </section>
+      </div>
+
+      <section class="panel dash-latest" aria-labelledby="dash-latest-h">
+        <div class="dash-latest__head">
+          <h2 class="h4" id="dash-latest-h" data-i18n="dashboard.latest">Derniers motifs</h2>
+          <p class="text-sm subtle" id="dash-latest-hint"></p>
+        </div>
+        <div id="dash-latest" aria-busy="true">
+          <p class="sr-only" data-i18n="dashboard.loading">Chargement…</p>
+        </div>
+      </section>
+    </div>
+  </section>
 </main>
 
-<footer class="footer">
-  <div class="container footer-inner">
-    <small>ZakhrafaAI — Tableau de bord.</small>
-  </div>
-</footer>
-
-<script src="/assets/js/nav.js"></script>
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/dashboard.js"></script>
+<footer id="site-footer"></footer>
+<script type="module" src="/assets/js/dashboard.js"></script>
 </body>
 </html>
