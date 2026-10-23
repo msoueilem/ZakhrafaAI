@@ -67,5 +67,6 @@
   "common.loading": "جارٍ التحميل…",
   "common.close": "إغلاق",
   "common.optional": "اختياري",
-  "common.just_now": "الآن"
+  "common.just_now": "الآن",
+  "error.validation.payload_too_large": "حجم الطلب كبير جدًا."
 }

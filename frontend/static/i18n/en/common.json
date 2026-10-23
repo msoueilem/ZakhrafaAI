@@ -67,5 +67,6 @@
   "common.loading": "Loading…",
   "common.close": "Close",
   "common.optional": "optional",
-  "common.just_now": "just now"
+  "common.just_now": "just now",
+  "error.validation.payload_too_large": "Request too large."
 }

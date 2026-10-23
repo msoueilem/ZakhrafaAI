@@ -753,6 +753,7 @@ function assistErrorDesc(r) {
   }
   const k = `studio.assist.error.${r.code}`;
   if (r.code && has(k)) return { key: k };
+  if (r.code && has(`error.validation.${r.code}`)) return { key: `error.validation.${r.code}`, params: r.params }; // ex. payload_too_large (413)
   if (r.code === "http" && r.status === 429) return { key: "studio.assist.error.assist_ip_limit" };
   return { key: "studio.assist.error.assist_error" };
 }

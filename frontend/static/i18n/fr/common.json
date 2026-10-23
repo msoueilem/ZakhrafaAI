@@ -67,5 +67,6 @@
   "common.loading": "Chargement…",
   "common.close": "Fermer",
   "common.optional": "optionnel",
-  "common.just_now": "à l'instant"
+  "common.just_now": "à l'instant",
+  "error.validation.payload_too_large": "Requête trop volumineuse."
 }
