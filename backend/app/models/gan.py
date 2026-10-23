@@ -16,7 +16,14 @@ puisse le brancher directement si des poids sont disponibles :
     G.load_state_dict(torch.load("gan_zellige_final.pth", map_location="cpu"))
     G.eval()
 
-Voir app/services/engine.py::TorchGANEngine pour le point d'intégration.
+Résolution : le générateur produit des images **64x64** (bruit 1x1 ->
+4 -> 8 -> 16 -> 32 -> 64). L'architecture n'est pas modifiée pour rester
+compatible avec les poids `.pth` déjà entraînés ; c'est le moteur
+(app/services/engine.py::_generate_with_torch_gan) qui agrandit la sortie
+à la taille demandée (256x256 par défaut en mode « gan »).
+
+Voir app/services/engine.py::_generate_with_torch_gan pour le point
+d'intégration.
 """
 from __future__ import annotations
 
@@ -37,6 +44,7 @@ if TORCH_AVAILABLE:
 
         Entrée : bruit z (dim 100) + embedding de catégorie -> déconvolutions
         transposées progressives -> Tanh en sortie (intervalle [-1, 1], §4.3).
+        Sortie : (B, 3, 64, 64).
         """
 
         def __init__(self, z_dim: int = 100, n_classes: int = 3, feature_maps: int = 64, img_channels: int = 3):
@@ -64,26 +72,37 @@ if TORCH_AVAILABLE:
             return self.net(z)
 
     class Discriminator(nn.Module):
-        """Discriminateur binaire (LeakyReLU, cf. §4.3)."""
+        """Discriminateur binaire conditionnel (LeakyReLU, cf. §4.3).
 
-        def __init__(self, n_classes: int = 3, feature_maps: int = 64, img_channels: int = 3):
+        Entrée : image (B, 3, 64, 64) + étiquette de catégorie. L'étiquette
+        est projetée en une carte 64x64 concaténée comme 4e canal (cGAN), puis
+        quatre convolutions stride 2 (64 -> 32 -> 16 -> 8 -> 4) et une
+        convolution 4x4 finale donnent **un score par image** : sortie (B,).
+        """
+
+        def __init__(self, n_classes: int = 3, feature_maps: int = 64, img_channels: int = 3, img_size: int = 64):
             super().__init__()
-            self.label_emb = nn.Embedding(n_classes, img_channels * 64 * 64)
+            self.img_size = img_size
+            self.label_emb = nn.Embedding(n_classes, img_size * img_size)
             self.net = nn.Sequential(
-                nn.Conv2d(img_channels, feature_maps, 4, 2, 1, bias=False),
+                nn.Conv2d(img_channels + 1, feature_maps, 4, 2, 1, bias=False),  # 64 -> 32
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Conv2d(feature_maps, feature_maps * 2, 4, 2, 1, bias=False),
+                nn.Conv2d(feature_maps, feature_maps * 2, 4, 2, 1, bias=False),  # 32 -> 16
                 nn.BatchNorm2d(feature_maps * 2),
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Conv2d(feature_maps * 2, feature_maps * 4, 4, 2, 1, bias=False),
+                nn.Conv2d(feature_maps * 2, feature_maps * 4, 4, 2, 1, bias=False),  # 16 -> 8
                 nn.BatchNorm2d(feature_maps * 4),
                 nn.LeakyReLU(0.2, inplace=True),
-                nn.Conv2d(feature_maps * 4, 1, 4, 1, 0, bias=False),
+                nn.Conv2d(feature_maps * 4, feature_maps * 8, 4, 2, 1, bias=False),  # 8 -> 4
+                nn.BatchNorm2d(feature_maps * 8),
+                nn.LeakyReLU(0.2, inplace=True),
+                nn.Conv2d(feature_maps * 8, 1, 4, 1, 0, bias=False),  # 4 -> 1
                 nn.Sigmoid(),
             )
 
-        def forward(self, x):
-            return self.net(x).view(-1)
+        def forward(self, x, labels):
+            label_map = self.label_emb(labels).view(-1, 1, self.img_size, self.img_size)
+            return self.net(torch.cat([x, label_map], dim=1)).view(-1)
 
 else:
 
