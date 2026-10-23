@@ -213,6 +213,21 @@ def test_html_urls_redirect_to_clean_urls(client, old, new):
     assert res.status_code == 301 and res.headers["location"] == new
 
 
-@pytest.mark.parametrize("path", ["/inexistante.html", "/inexistante", "/api"])
+@pytest.mark.parametrize("old, new", [("/studio/", "/studio"), ("/dashboard/", "/dashboard")])
+def test_trailing_slash_redirects_permanently_to_clean_url(client, old, new):
+    # relative : derrière le proxy HTTPS, le navigateur garde https://
+    res = client.get(old, follow_redirects=False)
+    assert res.status_code == 301 and res.headers["location"] == new
+
+
+def test_trailing_slash_redirect_keeps_https_behind_proxy(client):
+    res = client.get("/studio/", follow_redirects=True,
+                     headers={"X-Forwarded-Proto": "https"})
+    assert res.status_code == 200
+    assert res.history[0].status_code == 301
+    assert not res.history[0].headers["location"].startswith("http://")
+
+
+@pytest.mark.parametrize("path", ["/inexistante.html", "/inexistante", "/inexistante/", "/api"])
 def test_unknown_page_is_404(client, path):
     assert client.get(path).status_code == 404

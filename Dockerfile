@@ -29,4 +29,11 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=4)" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --proxy-headers : le schéma (X-Forwarded-Proto) posé par nginx est pris en
+# compte, sinon les URL absolues générées par l'application (redirections)
+# partent en http://. « * » (faire confiance à tout pair) est acceptable ici :
+# le port n'est publié que sur 127.0.0.1 (docker-compose.yml) et n'est
+# joignable qu'à travers nginx, seul pair possible. La limite de rendus IA
+# par adresse s'appuie sur X-Real-IP, posé par nginx (cf. client_ip()).
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
+     "--proxy-headers", "--forwarded-allow-ips", "*"]

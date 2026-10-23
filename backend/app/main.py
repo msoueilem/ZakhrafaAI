@@ -204,6 +204,15 @@ if FRONTEND_DIR.exists():
             return RedirectResponse(f"/{page}", status_code=301)
         raise HTTPException(status_code=404, detail="Page introuvable")
 
+    # « /studio/ » : sans cette route, Starlette redirigeait (307) vers une
+    # URL absolue reconstruite côté conteneur, donc en http:// derrière nginx.
+    # Redirection explicite, permanente et relative (le schéma est conservé).
+    @app.get("/{page}/")
+    def page_trailing_slash(page: str):
+        if page not in PAGES:
+            raise HTTPException(status_code=404, detail="Page introuvable")
+        return RedirectResponse(f"/{page}", status_code=301)
+
     @app.get("/{page}")
     def page(page: str):
         if page not in PAGES:
