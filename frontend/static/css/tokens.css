@@ -1,0 +1,196 @@
+/* ==========================================================================
+   ZakhrafaAI design tokens  -  "Midnight Zellige"
+   Charger avant base.css (cf. FOUNDATION.md).
+   Drop in before component CSS. Dark is the default; light via [data-theme="light"].
+   Fonts (put in <head>, before this file):
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+   Google Fonts ships unicode-range subsets, so the Arabic files only download
+   when Arabic glyphs are rendered - one URL works for fr / en / ar.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- Raw palette (zellige-derived) ---------- */
+  --ink-950: #05080D;
+  --ink-900: #070B12;   /* page */
+  --ink-850: #0C121C;   /* raised */
+  --ink-800: #121A27;   /* card / panel */
+  --ink-700: #1A2433;   /* input, hover */
+  --ink-600: #263246;
+
+  --saffron-300: #FFD27A;
+  --saffron-400: #F5B544;  /* brand primary (text/icons on dark) */
+  --saffron-500: #F0A93A;
+  --terracotta-500: #E8743A;
+  --terracotta-600: #C9542B;
+  --majorelle-300: #B8AEFF;
+  --majorelle-400: #9D8FFF;  /* "Rendu IA" accent (text on dark) */
+  --majorelle-500: #7B6CF6;  /* fills / glows */
+  --majorelle-700: #4B3FC0;
+  --fes-400: #4FA3FF;        /* Fès cobalt */
+  --fes-600: #1B6FA8;
+  --emerald-400: #46D19C;
+  --emerald-600: #2E7D5B;
+  --ruby-400: #FF7A6B;
+  --plaster-50: #FAF7F2;     /* tadelakt ivory */
+  --plaster-100: #F2ECE2;
+
+  /* ---------- Semantic: surfaces & text (dark) ---------- */
+  --bg: var(--ink-900);
+  --bg-raised: var(--ink-850);
+  --surface: var(--ink-800);
+  --surface-2: var(--ink-700);
+  --surface-glass: rgb(18 26 39 / 0.62);
+  --surface-glass-strong: rgb(12 18 28 / 0.82);
+  --overlay: rgb(5 8 13 / 0.72);
+
+  --text: #EEF2F7;         /* 17.5:1 on bg */
+  --text-2: #A9B4C4;       /* 9.4:1 on bg, 8.3:1 on surface */
+  --text-3: #8391A5;       /* 6.2:1 on bg, 5.5:1 on surface - min for small text */
+  --text-on-accent: #1A0F05;  /* on saffron/terracotta gradient: 6.3-10.4:1 */
+
+  --border: rgb(148 178 214 / 0.12);
+  --border-strong: rgb(148 178 214 / 0.22);
+  --border-accent: rgb(245 181 68 / 0.45);
+
+  --accent: var(--saffron-400);
+  --accent-hover: var(--saffron-300);
+  --ai: var(--majorelle-400);
+  --ai-fill: var(--majorelle-500);
+  --success: var(--emerald-400);
+  --info: var(--fes-400);
+  --danger: var(--ruby-400);
+  --focus: var(--saffron-400);
+
+  /* ---------- Gradients ---------- */
+  --grad-primary: linear-gradient(135deg, var(--saffron-500) 0%, var(--terracotta-500) 100%);
+  --grad-ai: linear-gradient(135deg, var(--majorelle-500) 0%, var(--fes-400) 100%);
+  --grad-text: linear-gradient(100deg, var(--saffron-300) 0%, var(--saffron-400) 35%, var(--terracotta-500) 70%, var(--majorelle-400) 100%);
+  /* Hero mesh: 4 zellige glows on ink. Pair with ornament.svg as mask. */
+  --grad-mesh:
+    radial-gradient(42% 38% at 22% 30%, rgb(240 169 58 / 0.22), transparent 70%),
+    radial-gradient(38% 42% at 78% 22%, rgb(46 125 91 / 0.22), transparent 70%),
+    radial-gradient(46% 46% at 70% 78%, rgb(123 108 246 / 0.22), transparent 70%),
+    radial-gradient(36% 30% at 30% 85%, rgb(27 111 168 / 0.20), transparent 70%);
+  --grad-ornament:  /* what the lattice lines reveal */
+    radial-gradient(35% 45% at 25% 35%, var(--saffron-400), transparent 72%),
+    radial-gradient(35% 45% at 65% 15%, var(--emerald-400), transparent 72%),
+    radial-gradient(40% 50% at 80% 70%, var(--majorelle-500), transparent 72%);
+  --grad-card-edge: linear-gradient(160deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.02) 40%, rgb(245 181 68 / 0.18));
+
+  /* ---------- Elevation & glow ---------- */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 8px 24px -8px rgb(0 0 0 / 0.55);
+  --shadow-3: 0 24px 64px -16px rgb(0 0 0 / 0.7);
+  --glow-accent: 0 0 0 1px rgb(245 181 68 / 0.35), 0 8px 32px -6px rgb(240 169 58 / 0.45);
+  --glow-ai: 0 0 0 1px rgb(157 143 255 / 0.4), 0 8px 32px -6px rgb(123 108 246 / 0.5);
+  --glow-soft: 0 0 80px -20px rgb(240 169 58 / 0.35);
+  --inner-hi: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --blur-glass: blur(18px) saturate(140%);
+
+  /* ---------- Radii (soft-tech, not pill everywhere) ---------- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 999px;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px; --sp-5: 20px;
+  --sp-6: 24px; --sp-8: 32px; --sp-10: 40px; --sp-12: 48px; --sp-16: 64px;
+  --sp-20: 80px; --sp-24: 96px; --sp-32: 128px;
+  --section-y: clamp(64px, 10vw, 128px);
+  --gutter: clamp(16px, 4vw, 32px);
+  --container: 1200px;
+  --container-narrow: 720px;
+  --nav-h: 64px;
+  --tap: 44px;            /* cible tactile minimale */
+  --bp-nav: 900px;        /* documentaire : menu mobile sous 900px (valeur codée dans les @media) */
+
+  /* ---------- Typography ---------- */
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "Inter", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  /* fluid scale (1.25 ratio, 16px base) */
+  --fs-xs: 0.75rem;                                  /* 12 */
+  --fs-sm: 0.875rem;                                 /* 14 */
+  --fs-md: 1rem;                                     /* 16 */
+  --fs-lg: 1.125rem;                                 /* 18 */
+  --fs-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);   /* 20-24 */
+  --fs-2xl: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);     /* 24-32 */
+  --fs-3xl: clamp(2rem, 1.4rem + 2.4vw, 3rem);       /* 32-48 */
+  --fs-4xl: clamp(2.5rem, 1.6rem + 3.8vw, 4.25rem);  /* 40-68 hero */
+
+  --lh-tight: 1.08;
+  --lh-snug: 1.25;
+  --lh-body: 1.6;
+  --ls-display: -0.025em;
+  --ls-eyebrow: 0.14em;
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;  /* press, color */
+  --dur-2: 200ms;  /* hover, toggles */
+  --dur-3: 360ms;  /* panels, reveal */
+  --dur-4: 700ms;  /* hero entrance */
+  --dur-ambient: 24s; /* ornament drift / mesh breathing */
+
+  /* ---------- Layers ---------- */
+  --z-bg: -1; --z-base: 0; --z-sticky: 20; --z-nav: 40; --z-menu: 50; --z-toast: 60; --z-modal: 70;
+}
+
+/* Arabic: no negative tracking (breaks joined script), taller line-height, body font first. */
+:root:lang(ar), [lang="ar"] {
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+  --ls-display: 0;
+  --ls-eyebrow: 0;
+  --lh-tight: 1.3;
+  --lh-snug: 1.45;
+  --lh-body: 1.8;
+}
+
+/* ---------- Light theme (optional, "tadelakt") ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: var(--plaster-50);
+  --bg-raised: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: var(--plaster-100);
+  --surface-glass: rgb(255 255 255 / 0.7);
+  --surface-glass-strong: rgb(250 247 242 / 0.88);
+  --overlay: rgb(20 26 36 / 0.45);
+  --text: #141A24;        /* 16.3:1 */
+  --text-2: #4A5566;      /* 7.1:1 */
+  --text-3: #5E6A7C;      /* 5.1:1 */
+  --border: rgb(20 26 36 / 0.10);
+  --border-strong: rgb(20 26 36 / 0.18);
+  --border-accent: rgb(201 84 43 / 0.45);
+  --accent: #9A5A00;      /* saffron darkened for text: 5.1:1 */
+  --accent-hover: #7E4900;
+  --ai: #5B4BD6;          /* 5.7:1 */
+  --ai-fill: var(--majorelle-500);
+  --success: #1F6B4C;
+  --danger: #B3362A;
+  --focus: #C9542B;
+  --grad-mesh:
+    radial-gradient(42% 38% at 22% 30%, rgb(240 169 58 / 0.18), transparent 70%),
+    radial-gradient(38% 42% at 78% 22%, rgb(46 125 91 / 0.12), transparent 70%),
+    radial-gradient(46% 46% at 70% 78%, rgb(123 108 246 / 0.14), transparent 70%);
+  --shadow-2: 0 8px 24px -10px rgb(20 26 36 / 0.18);
+  --shadow-3: 0 24px 64px -20px rgb(20 26 36 / 0.25);
+  --glow-accent: 0 0 0 1px rgb(201 84 43 / 0.3), 0 8px 28px -8px rgb(232 116 58 / 0.4);
+  --inner-hi: inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+
+/* ---------- Reduced motion: kill ambient + shorten everything ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-1: 0ms; --dur-2: 0ms; --dur-3: 0ms; --dur-4: 0ms; --dur-ambient: 0s; }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" stroke="#000" stroke-width="1" stroke-linejoin="round" stroke-linecap="round">
+  <!-- ZakhrafaAI ornament - original 8-point star (khatam) line lattice, seamless 120px tile.
+       Primary use: CSS mask-image so the lines reveal a zellige gradient mesh beneath.
+       Fallback: background-image at opacity .04-.08. Stroke is black on purpose (mask alpha). -->
+  <path d="M60.00 24.00 L67.99 40.71 L85.46 34.54 L79.29 52.01 L96.00 60.00 L79.29 67.99 L85.46 85.46 L67.99 79.29 L60.00 96.00 L52.01 79.29 L34.54 85.46 L40.71 67.99 L24.00 60.00 L40.71 52.01 L34.54 34.54 L52.01 40.71Z"/>
+  <path d="M71.96 64.95 L64.95 71.96 L55.05 71.96 L48.04 64.95 L48.04 55.05 L55.05 48.04 L64.95 48.04 L71.96 55.05Z"/>
+  <path d="M96.00 60.00 L120.00 60.00 M85.46 85.46 L120.00 120.00 M60.00 96.00 L60.00 120.00 M34.54 85.46 L0.00 120.00 M24.00 60.00 L0.00 60.00 M34.54 34.54 L-0.00 0.00 M60.00 24.00 L60.00 0.00 M85.46 34.54 L120.00 -0.00"/>
+  <path d="M-10 0 L0 -10 L10 0 L0 10Z M110 0 L120 -10 L130 0 L120 10Z M-10 120 L0 110 L10 120 L0 130Z M110 120 L120 110 L130 120 L120 130Z"/>
+</svg>
