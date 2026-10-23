@@ -37,7 +37,11 @@
         });
       }
     } catch (err) {
-      document.getElementById("historyList").innerHTML = `<div class="empty-state" style="color:var(--danger)">Erreur : ${err.message}</div>`;
+      const box = document.createElement("div");
+      box.className = "empty-state";
+      box.style.color = "var(--danger)";
+      box.textContent = `Erreur : ${err.message}`;
+      document.getElementById("historyList").replaceChildren(box);
     }
   }
 

@@ -35,7 +35,9 @@
     galleryGrid: document.getElementById("galleryGrid"),
   };
 
-  let lastImageUrl = null;
+  // Dernier résultat + paramètres de la requête qui l'a produit (le nom du
+  // fichier téléchargé et « Régénérer » s'appuient dessus, pas sur l'état courant).
+  let last = null;
   const history = [];
 
   function renderPalettes() {
@@ -75,11 +77,16 @@
     els.generateBtn.textContent = "Génération…";
   }
 
-  function renderResult(result) {
-    lastImageUrl = result.image;
-    els.canvasWrap.innerHTML = `<img src="${result.image}" alt="Motif ${state.category} généré" />`;
+  function renderResult(result, request) {
+    // seed renvoyée par le serveur : permet de reproduire exactement l'image
+    last = { image: result.image, request: { ...request, seed: result.seed } };
+    els.canvasWrap.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = result.image;
+    img.alt = `Motif ${request.category} généré`;
+    els.canvasWrap.appendChild(img);
     els.metaRow.style.display = "flex";
-    els.metaEngine.textContent = result.engine === "gan" ? "GAN" : "Diffusion";
+    els.metaEngine.textContent = result.engine === "gan" ? "Rapide" : "Détaillé";
     els.metaSize.textContent = `${result.width}×${result.height}`;
     els.metaTime.textContent = `${result.elapsed_ms} ms`;
     els.metaSeed.textContent = result.seed;
@@ -99,25 +106,34 @@
   }
 
   function renderError(message) {
-    els.canvasWrap.innerHTML = `
-      <div class="canvas-placeholder" style="color:var(--danger);">
-        Échec de la génération : ${message}
-      </div>`;
+    // textContent : le message vient du serveur, on ne l'interprète pas en HTML
+    const box = document.createElement("div");
+    box.className = "canvas-placeholder";
+    box.style.color = "var(--danger)";
+    box.textContent = `Échec de la génération : ${message}`;
+    els.canvasWrap.innerHTML = "";
+    els.canvasWrap.appendChild(box);
   }
 
-  async function doGenerate() {
-    setLoading();
+  function currentRequest() {
     const seedVal = els.seedInput.value ? parseInt(els.seedInput.value, 10) : null;
     const sizeVal = els.sizeInput.value ? parseInt(els.sizeInput.value, 10) : null;
+    return {
+      category: state.category,
+      engine: state.engine,
+      palette: state.palette,
+      seed: Number.isNaN(seedVal) ? null : seedVal,
+      size: Number.isNaN(sizeVal) ? null : sizeVal,
+    };
+  }
+
+  // « Générer » : réglages courants (nouvelle seed si le champ est vide).
+  // « Régénérer » : rejoue exactement la dernière requête, seed comprise.
+  async function doGenerate(request) {
+    setLoading();
     try {
-      const result = await ZakhrafaAPI.generate({
-        category: state.category,
-        engine: state.engine,
-        palette: state.palette,
-        seed: seedVal,
-        size: sizeVal,
-      });
-      renderResult(result);
+      const result = await ZakhrafaAPI.generate(request);
+      renderResult(result, request);
     } catch (err) {
       renderError(err.message || "erreur inconnue");
     } finally {
@@ -126,13 +142,16 @@
     }
   }
 
-  els.generateBtn.addEventListener("click", doGenerate);
-  els.regenBtn.addEventListener("click", doGenerate);
+  els.generateBtn.addEventListener("click", () => doGenerate(currentRequest()));
+  els.regenBtn.addEventListener("click", () => {
+    if (last) doGenerate({ ...last.request });
+  });
   els.downloadBtn.addEventListener("click", () => {
-    if (!lastImageUrl) return;
+    if (!last) return;
+    const { category, engine, seed } = last.request;
     const a = document.createElement("a");
-    a.href = lastImageUrl;
-    a.download = `zakhrafaai_${state.category}_${state.engine}.png`;
+    a.href = last.image;
+    a.download = `zakhrafaai_${category}_${engine}_${seed}.png`;
     document.body.appendChild(a);
     a.click();
     a.remove();
