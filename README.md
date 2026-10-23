@@ -101,6 +101,46 @@ renvoie l'image procédurale avec `source: "procedural"` et un `notice`
 explicatif — jamais d'erreur 500. La clé n'est ni journalisée ni exposée :
 `/api/meta` ne publie que `ai: {enabled, model, remaining_today}`.
 
+## Assistant DeepSeek
+
+Un LLM texte (API DeepSeek, format OpenAI : `POST
+https://api.deepseek.com/chat/completions`, mode JSON, mode « réflexion »
+désactivé, appelé avec `httpx`) aide à écrire les réglages, en français,
+arabe ou anglais (`lang` : `fr` par défaut, `ar`, `en`) :
+
+- `POST /api/assist/enhance` `{prompt, category, lang}` → `{prompt}` : idée de
+  style approximative → description précise (matière, couleurs, finition)
+  pour le Rendu IA, 300 caractères max ;
+- `POST /api/assist/plan` `{idea, lang}` → `{category, palette, engine,
+  prompt, explanation}` : idée en langage naturel → réglages du générateur
+  (énumérations validées, défauts sûrs `zellige` / `zellige_classique` / `gan`) ;
+- `POST /api/assist/caption` `{category, palette, lang}` → `{caption}` : note
+  culturelle courte (400 caractères max), mise en cache (hors quota) ;
+- `GET /api/assist/status` → `{enabled, model, remaining_today}`.
+
+Erreurs au format `{"code": ...}` : 503 `assist_disabled` (pas de clé), 429
+`assist_ip_limit` / `assist_daily_limit` (en-tête `Retry-After`), 502
+`assist_error` (erreur, délai ou réponse inexploitable après une relance) ;
+422 pour une entrée invalide (texte vide ou > 500 caractères, énumération
+inconnue). Le texte saisi n'est transmis qu'en tant que donnée (chaîne JSON
+dans le message utilisateur) ; le prompt système l'interdit d'en suivre les
+instructions.
+
+| Variable                | Défaut           | Rôle |
+|-------------------------|------------------|------|
+| `DEEPSEEK_API_KEY`      | *(vide)*         | clé API DeepSeek ; vide ⇒ assistant désactivé (503) |
+| `DEEPSEEK_MODEL`        | `deepseek-flash` | modèle (`deepseek-v4-pro` plus cher) |
+| `DEEPSEEK_DAILY_LIMIT`  | `500`            | appels facturés max par jour UTC (une relance compte) |
+| `DEEPSEEK_PER_IP_LIMIT` | `20`             | requêtes max par adresse IP sur 10 min (hors cache) |
+| `DEEPSEEK_TIMEOUT`      | `20`             | délai max d'un appel, en secondes |
+
+Coût (tarifs `deepseek-flash` relevés le 2026-10-23 sur
+https://api-docs.deepseek.com/quick_start/pricing : 0,30 $ / M jetons
+d'entrée et 1,20 $ / M de sortie aux heures pleines, moitié prix en heures
+creuses) : un appel fait ~400 à 800 jetons d'entrée et ≤ 400 de sortie, soit
+≤ 0,0007 $. Au plafond de 500 appels/jour : ≈ 0,35 $/jour au pire, plutôt
+0,10 à 0,20 $ en usage réel.
+
 ## Pourquoi un générateur procédural par défaut ?
 
 Le rapport documente un GAN convolutionnel entraîné (`gan_<pattern>_final.pth`)
@@ -153,6 +193,8 @@ zakhrafaai/
 │       ├── main.py             # API FastAPI + sert le frontend
 │       ├── services/engine.py  # sélection du moteur de génération
 │       ├── services/gemini.py  # rendu IA Gemini (quotas, cache, repli)
+│       ├── services/deepseek.py # assistant de prompt DeepSeek (quotas, cache)
+│       ├── routers/assist.py   # endpoints /api/assist/*
 │       ├── generators/         # moteur procédural (zellige, tapis, broderie)
 │       └── models/             # architectures GAN & Diffusion réelles (§4)
 └── frontend/
@@ -173,6 +215,8 @@ zakhrafaai/
 | GET     | `/api/meta`       | catégories, moteurs, palettes, état du rendu IA |
 | POST    | `/api/generate`   | génère une image (voir corps ci-dessous)       |
 | GET     | `/api/dashboard`  | statistiques globales du serveur (en mémoire)  |
+| POST    | `/api/assist/{enhance,plan,caption}` | assistant DeepSeek (voir « Assistant DeepSeek ») |
+| GET     | `/api/assist/status` | état de l'assistant (activé, modèle, appels restants) |
 
 Corps de `POST /api/generate` :
 ```json

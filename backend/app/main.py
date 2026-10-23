@@ -24,6 +24,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from app.generators.utils import PALETTE_LABELS, PALETTES
+from app.routers import assist
 from app.services import engine, gemini
 
 APP_DIR = Path(__file__).resolve().parent
@@ -47,6 +48,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# assistant de prompt DeepSeek (/api/assist/*)
+app.include_router(assist.router)
 
 
 MAX_SEED = 2**53 - 1
