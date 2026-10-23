@@ -486,6 +486,7 @@ main:focus { outline: none; }
   min-block-size: 36px; padding-inline: 14px;
   border-radius: var(--r-full);
   font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--text-2); text-decoration: none;
+  white-space: nowrap;
   transition: background-color var(--dur-2), color var(--dur-2);
 }
 .nav-link:hover { color: var(--text); background: var(--surface-2); }
