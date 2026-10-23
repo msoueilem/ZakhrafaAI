@@ -167,7 +167,8 @@ def test_dashboard_lists_at_most_8_recent(client):
 
 @pytest.mark.parametrize("path", ["/", "/studio", "/dashboard",
                                   "/assets/css/styles.css", "/assets/js/api.js",
-                                  "/assets/js/studio.js", "/assets/js/dashboard.js"])
+                                  "/assets/js/studio.js", "/assets/js/dashboard.js",
+                                  "/assets/js/nav.js"])
 def test_static_pages(client, path):
     assert client.get(path).status_code == 200
 

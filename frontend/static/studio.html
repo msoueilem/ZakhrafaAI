@@ -18,11 +18,16 @@
       </svg>
       ZakhrafaAI
     </a>
-    <div class="nav-links">
+    <div class="nav-links" id="navMenu">
       <a href="/">Accueil</a>
       <a href="/studio" class="active">Générer</a>
       <a href="/dashboard">Tableau de bord</a>
     </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="navMenu" aria-label="Ouvrir le menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
     <a class="nav-cta" href="/dashboard">Tableau de bord</a>
   </div>
 </nav>
@@ -131,6 +136,7 @@
   </div>
 </footer>
 
+<script src="/assets/js/nav.js"></script>
 <script src="/assets/js/api.js"></script>
 <script src="/assets/js/studio.js"></script>
 </body>
